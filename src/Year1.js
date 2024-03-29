@@ -3,16 +3,17 @@ import './Year1.css';
 import Dashboard from './Dashboard';
 // Example data structure
 
+const objectListTest = [{
+  name: "Kilter Roller Chair",
+  numberToSell: 10,
+  price: 3999
+},
+{name: "Kilter Roller",
+numberToSell: 5,
+price: 85}];
 
 function Year1({ setLoggedIn }) {
-  const objectListTest = [{
-    name: "Kilter Roller Chair",
-    numberToSell: 10,
-    price: 3999
-  },
-  {name: "Kilter Roller",
-  numberToSell: 5,
-  price: 85}];
+  
   
   const [customerSegments, setCustomerSegments] = useState([]);
   const [sources, setSources] = useState([]);
@@ -32,6 +33,7 @@ function Year1({ setLoggedIn }) {
   useEffect(() => {
     // Check if objectList is not empty
     if (objectListTest.length > 0) {
+      console.log("yea Making it baby!")
       const initialMonthlyData = {
         NumbersSold: 0,
         Deposit: 0,
@@ -66,48 +68,57 @@ function Year1({ setLoggedIn }) {
     if (customerSegments.length > 0) {
       // This block will run only after customerSegments has been initialized
       var customerSegmentsLocal = [...customerSegments]; // Create a copy of customerSegments
-      console.log(customerSegmentsLocal[0]);
-      customerSegmentsLocal[0].name = 'Name ME';
-      console.log(customerSegmentsLocal[0]);
+      console.log(customerSegments)
     }
   }, [customerSegments]);
 
   //{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}
   
   return (
-    <div class="year1">
+    <div className="year1">
       <Dashboard setLoggedIn={setLoggedIn}/>
       <h2>Year 1 Income Overview</h2>
 
       {customerSegments.map(item => (
-      <table class="tableizer-table">
+      <table className="tableizer-table" key={item.name}>
         <thead>
           <tr>
             <th>Product/Service</th>
             <th>{item.status}</th>
-            {months.map(month => <th key={month}>{month}</th>)}
+            {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
           </tr>
         </thead>
         <tbody>
             <tr key={item.name}>
-              <td>{item.name}</td>
-              <td>
-              <tr>Number of Customers @ <span style={{padding: '2px'}}>{item.inputData.deposit}</span></tr>
-              <tr><label for="inp1">Deposit %</label></tr><input name="inp1"></input>
-              <tr>Delievered in X months </tr><input></input>
-              <tr># of extra months to pay </tr><input></input>
-              <tr>Commission as % of income </tr><input></input>
-              <tr>Fixed Fees/Customer </tr><input></input></td>
-              {months.map((month, index) => (
-              <td key={index}>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].NumbersSold}</tr>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].Deposit}</tr>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].Original}</tr>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].ExtraFromPreviousMonths}</tr>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].commission}</tr>
-                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].fixedFees}</tr>
+              <td rowSpan={6}>{item.name}</td>
+              <td rowSpan={6}>
+                <table className="nested-table">
+                  <thead></thead>
+                  <tbody>
+                    <tr><td>Number of Customers @ {item.inputData.deposit}</td></tr>
+                    <tr><td>Deposit % <input name="inp1"></input></td></tr>
+                    <tr><td>Delievered in X months <input></input></td></tr>
+                    <tr><td># of extra months to pay <input></input></td></tr>
+                    <tr><td>Commission as % of income <input></input></td></tr>
+                    <tr><td>Fixed Fees/Customer <input></input></td></tr>
+                  </tbody>
+                </table>
               </td>
-              ))}
+                {months.map((month, index) => (
+                  <td rowSpan={6} key={month} className="td-month">
+                    <table className="month-table">
+                      <thead></thead>
+                        <tbody>
+                          <tr><td className="td-month"><input type="number"></input></td></tr>
+                          <tr><td className="td-month"></td></tr>
+                          <tr><td className="td-month"></td></tr>
+                          <tr><td className="td-month"></td></tr>
+                          <tr><td className="td-month"></td></tr>
+                          <tr><td className="td-month"></td></tr>
+                        </tbody>   
+                    </table>
+                  </td>
+                ))} 
             </tr>
         </tbody>
       </table>
