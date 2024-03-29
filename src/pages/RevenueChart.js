@@ -1,4 +1,5 @@
 import React from 'react';
+import "./styling/Rev.css"
 import {
   LineChart,
   Line,
@@ -13,7 +14,8 @@ import {
 
 const RevenueChart = ({ data }) => {
   return (
-    <ResponsiveContainer width="80%" height={300}>
+    < div className="graph-container">
+    <ResponsiveContainer width="70%" height={350}>
       <LineChart
         data={data}
         margin={{
@@ -34,6 +36,7 @@ const RevenueChart = ({ data }) => {
         <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
       </LineChart>
     </ResponsiveContainer>
+    </div>
   );
 };
 

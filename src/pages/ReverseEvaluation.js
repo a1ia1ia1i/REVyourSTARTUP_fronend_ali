@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import RevenueChart from './RevenueChart';
+import "./styling/Rev.css"
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { Link } from 'react-router-dom';
+
 
 function ReverseEvaluation() {
   // Calculations for Invest Table
@@ -37,6 +42,7 @@ function ReverseEvaluation() {
   const [customers1, setCustomers1] = useState(new Array(5).fill(0));
   const [revenue2, setRevenue2] = useState(new Array(5).fill(0));
   const [customers2, setCustomers2] = useState(new Array(5).fill(0));
+  const [visibleRowsYear1, setVisibleRowsYear1] = useState(1);
 
   // Calculations for Segments At Year 2
   const [segmentNamesYear2, setSegmentNamesYear2] = useState(new Array(5).fill(''));
@@ -47,6 +53,7 @@ function ReverseEvaluation() {
   const [customers1Year2, setCustomers1Year2] = useState(new Array(5).fill(0));
   const [revenue2Year2, setRevenue2Year2] = useState(new Array(5).fill(0));
   const [customers2Year2, setCustomers2Year2] = useState(new Array(5).fill(0));
+  const [visibleColumnsYear2, setVisibleColumnsYear2] = useState(1);
 
   // Calculations for Segments At Year 3
   const [segmentNamesYear3, setSegmentNamesYear3] = useState(new Array(5).fill(''));
@@ -57,6 +64,37 @@ function ReverseEvaluation() {
   const [customers1Year3, setCustomers1Year3] = useState(new Array(5).fill(0));
   const [revenue2Year3, setRevenue2Year3] = useState(new Array(5).fill(0));
   const [customers2Year3, setCustomers2Year3] = useState(new Array(5).fill(0));
+  const [visibleColumnsYear3, setVisibleColumnsYear3] = useState(1);
+
+  const [submitted, setSubmitted] = useState(false);
+
+  const downloadPdfDocument = () => {
+    // Temporarily hide the buttons
+    const noPrintElements = document.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.classList.add('hide-elements'));
+
+    const input = document.getElementById('form-content');
+    html2canvas(input).then((canvas) => {
+        // Once the canvas is ready, remove the class to show the buttons again
+        noPrintElements.forEach(el => el.classList.remove('hide-elements'));
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+        });
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save("download.pdf");
+    });
+}
+
+
+
+const handleSubmit = () => {
+  setSubmitted(true);
+};
 
 
   function calculatePercentYear3(year) {
@@ -150,6 +188,23 @@ function ReverseEvaluation() {
 
 
   //Customer Segments At Year 1
+
+  const addRowYear1 = () => {
+    setVisibleRowsYear1((currentRows) => (currentRows < 5 ? currentRows + 1 : currentRows));
+  };
+
+  const handleAvgRevenueChange = (index, value) => {
+    const updatedValues= [...avgRevenuePerCustomer];
+    updatedValues[index] = value !== '' ? value : '0'; 
+    setAvgRevenuePerCustomer(updatedValues);
+  };
+
+  const handleYourPercentChange = (index, value) => {
+    const updatedValues = [...yourPercent];
+    updatedValues[index] = value !== '' ? value : '0';
+    setYourPercent(updatedValues);
+  };
+
   function calculateQuickModelingPercentages(avgRevenuePerCustomer) {
     const avgRevenues = avgRevenuePerCustomer.map(avg => parseFloat(avg) || 0);
     
@@ -227,7 +282,7 @@ function ReverseEvaluation() {
     return revenue2.map((rev2, index) => {
       const avgRev = parseFloat(avgRevenuePerCustomer[index]) || 0; 
       if (avgRev === 0) return 0; 
-      return parseFloat((rev2 / avgRev).toFixed(1)); 
+      return parseFloat((rev2 / avgRev).toFixed(0)); 
     });
   }
   
@@ -239,6 +294,21 @@ function ReverseEvaluation() {
 
   //Customer Segments At Year 2
 
+  const addRowYear2 = () => {
+    setVisibleColumnsYear2((currentColumns) => (currentColumns < 5 ? currentColumns + 1 : currentColumns));
+  };  
+
+  const handleAvgRevenueChangeYear2 = (index, value) => {
+    const updatedValues= [...avgRevenuePerCustomerYear2];
+    updatedValues[index] = value !== '' ? value : '0'; 
+    setAvgRevenuePerCustomerYear2(updatedValues);
+  };
+
+  const handleYourPercentChangeYear2 = (index, value) => {
+    const updatedValues = [...yourPercentYear2];
+    updatedValues[index] = value !== '' ? value : '0';
+    setYourPercentYear2(updatedValues);
+  };
 
   function calculateQuickModelingPercentagesYear2(avgRevenuePerCustomerYear2) {
     const avgRevenuesYear2 = avgRevenuePerCustomerYear2.map(avg => parseFloat(avg) || 0);
@@ -324,6 +394,22 @@ useEffect(() => {
 
 //Customer Segments At Year 3
 
+const addRowYear3 = () => {
+  setVisibleColumnsYear3((currentColumns) => (currentColumns < 5 ? currentColumns + 1 : currentColumns));
+};  
+
+const handleAvgRevenueChangeYear3 = (index, value) => {
+  const updatedValues= [...avgRevenuePerCustomerYear3];
+  updatedValues[index] = value !== '' ? value : '0'; 
+  setAvgRevenuePerCustomerYear3(updatedValues);
+};
+
+const handleYourPercentChangeYear3 = (index, value) => {
+  const updatedValues = [...yourPercentYear3];
+  updatedValues[index] = value !== '' ? value : '0';
+  setYourPercentYear3(updatedValues);
+};
+
 function calculateQuickModelingPercentagesYear3(avgRevenuePerCustomerYear3) {
   const avgRevenuesYear3 = avgRevenuePerCustomerYear3.map(avg => parseFloat(avg) || 0);
 // Determine the percentage for segment 1 year 1
@@ -407,11 +493,31 @@ useEffect(() => {
   const newCustomers2Year3 = calculateCustomers2Year3(); 
   setCustomers2Year3(newCustomers2Year3); 
 }, [revenue2Year3, avgRevenuePerCustomerYear3]); 
+
+const handleSave = () => {
+  const formData = {
+    lastYearsRevenue,
+    amountNeeded,
+    multiplierExpected,
+    equityPercentage,
+    revenueMultiplierExit,
+    growthProjection,
+    forceTo,
+    // Include other relevant pieces of state to save
+  };
   
-  
+  localStorage.setItem('formData', JSON.stringify(formData));
+  alert('Form data saved successfully!');
+};
+
 
   return (
     <div>
+      <nav className="rev_navbar">
+        <Link to="/" className="rev_home-button">Home</Link> 
+      </nav>
+    <div id="form-content" className="container">
+      <h1 className="RevTitle">How To Reverse Engineer Valuation</h1>
       <table>
         <tr>
           <td>Last Year's Total Revenue (if relevant)</td>
@@ -423,11 +529,12 @@ useEffect(() => {
         </tr>
         <tr>
           <td>Multiplier the investor expects (e.g. 2-10X)</td>
-          <td><input type="number" value={multiplierExpected} onChange={(e) => setMultiplierExpected(e.target.value)} /></td>
+          <td>
+            <input type="number" value={multiplierExpected} onChange={(e) => setMultiplierExpected(e.target.value)} /></td>
         </tr>
         <tr>
           <td>Amount $$$$$ the investor hopes for @Exit</td>
-          <td>{amountHopedForExit.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>${amountHopedForExit.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
         </tr>
         <tr>
           <td>What % of equity are you giving up (e.g. 5-25%)?</td>
@@ -435,7 +542,7 @@ useEffect(() => {
         </tr>
         <tr>
           <td>What company needs to be worth @ Year 3</td>
-          <td>{companyWorthAtYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>${companyWorthAtYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
         </tr>
         <tr>
           <td>Multiplier of revenue expected at exit (e.g. 2X)</td>
@@ -443,23 +550,23 @@ useEffect(() => {
         </tr>
         <tr>
           <td>Revenue needed year 3 based upon multiplier</td>
-          <td>{revenueNeededYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>${revenueNeededYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
         </tr>
         <tr>
           <td>Growth Projection % per year (e.g. 500%)</td>
           <td><input type="number" value={growthProjection} onChange={(e) => setGrowthProjection(e.target.value)} disabled={lastYearsRevenue > 0} /></td>
         </tr>
         <tr>
-          <td>Effective Interest in 3 Years</td>
-          <td>{typeof effectiveInterest3Years === "number" ? effectiveInterest3Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:2}) : effectiveInterest3Years}</td>
+          <td  className="EffectiveTable">Effective Interest in 3 Years</td>
+          <td>{typeof effectiveInterest3Years === "number" ? effectiveInterest3Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest3Years}</td>
         </tr>
         <tr>
           <td>Effective Interest in 5 Years</td>
-          <td>{typeof effectiveInterest5Years === "number" ? effectiveInterest5Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:2}) : effectiveInterest5Years}</td>
+          <td>{typeof effectiveInterest5Years === "number" ? effectiveInterest5Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest5Years}</td>
         </tr>
         <tr>
           <td>Effective Interest in 7 Years</td>
-          <td>{typeof effectiveInterest7Years === "number" ? effectiveInterest7Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:2}) : effectiveInterest7Years}</td>
+          <td>{typeof effectiveInterest7Years === "number" ? effectiveInterest7Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest7Years}</td>
         </tr>
       </table>
       <table>
@@ -476,7 +583,7 @@ useEffect(() => {
         </tr>
       </tbody>
     </table>
-      <table>
+      <table className="RevenueTable">
         <thead>
           <tr>
             <th>Year</th>
@@ -489,8 +596,8 @@ useEffect(() => {
         {[0, 1, 2, 3, 4, 5].map((year) => (
             <tr key={year}>
               <td>{year}</td>
-              <td>{(calculatePercentYear3(year) * 100).toFixed(2)}%</td>
-              <td>{calculateRevenue(year).toFixed(2)}</td>
+              <td>{(calculatePercentYear3(year) * 100).toFixed(0)}%</td>
+              <td>${calculateRevenue(year).toFixed(0)}</td>
               <td>
                 {year === 3 ? '100%' : year === 0 ? '0%' : (
                   <input
@@ -509,22 +616,22 @@ useEffect(() => {
         </tbody>
       </table>
       <RevenueChart data={chartData} />
-      <table>
+      <table className="Yaer1Table">
         <thead>
           <tr>
-            <th>Customer Segments At Year 1</th>
+            <th className="segment-column">Customer Segments At Year 1</th>
             <th>Avg Revenue/Customer</th>
             <th>Quick Modeling as % of Revenue</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
             <th>Your %</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
           </tr>
         </thead>
         <tbody>
-          {segmentNames.map((segmentName, index) => (
-            <tr key={index}>
+          {segmentNames.slice(0, visibleRowsYear1).map((segmentName, index) => (
+             <tr key={index}>
               <td>
                 <input
                   type="text"
@@ -536,20 +643,17 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>
+              <td>$
                 <input
                   type="number"
                   value={avgRevenuePerCustomer[index]}
-                  onChange={(e) => {
-                    const newAvgRevenuePerCustomer = [...avgRevenuePerCustomer];
-                    const value = parseFloat(e.target.value) || 0; 
-                    newAvgRevenuePerCustomer[index] = value; 
-                    setAvgRevenuePerCustomer(newAvgRevenuePerCustomer)
-                  }}
+                  onChange={(e) => handleAvgRevenueChange(index, e.target.value)
+                  }
                 />
               </td>
-              <td>{quickModelingPercentage[index] ? quickModelingPercentage[index].toFixed(2) : '0.00'}</td>
-              <td>{revenue1[index].toFixed(2)}</td>
+              <td>{quickModelingPercentage[index] ? quickModelingPercentage[index].toFixed(0) : ''}%</td>
+              
+              <td>${ revenue1[index].toFixed(0) }</td>
               <td>{customers1[index]}</td>
               <td>
                 <input
@@ -562,32 +666,36 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>{revenue2[index].toFixed(1)}</td>
-              <td>{customers2[index].toFixed(1)}</td>
+              <td>${revenue2[index].toFixed(0)}</td>
+              <td>{customers2[index].toFixed(0)}</td>
             </tr>
           ))}
+          <button className="no-print" onClick={addRowYear1} disabled={visibleRowsYear1 >= 5}>
+            Add Row Year1
+          </button>
+
         </tbody>
       </table>
-      <table>
+      <table className="Yaer2Table">
         <thead>
           <tr>
-            <th>Customer Segments At Year 2</th>
+            <th className="segment-column">Customer Segments At Year 2</th>
             <th>Avg Revenue/Customer</th>
             <th>Quick Modeling as % of Revenue</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
             <th>Your %</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
           </tr>
         </thead>
         <tbody>
-          {segmentNamesYear2.map((segmentNameYear2, index) => (
+          {segmentNamesYear2.slice(0, visibleColumnsYear2).map((segmentNameYear2, index) => (
             <tr key={index}>
               <td>
                 <input
                   type="text"
-                  value={segmentNameYear2}
+                  value={segmentNamesYear2[index]}
                   onChange={(e) => {
                     const newSegmentNamesYear2 = [...segmentNamesYear2];
                     newSegmentNamesYear2[index] = e.target.value;
@@ -595,7 +703,7 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>
+              <td className="SegName">$
                 <input
                   type="number"
                   value={avgRevenuePerCustomerYear2[index]}
@@ -607,8 +715,8 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>{quickModelingPercentageYear2[index] ? quickModelingPercentageYear2[index].toFixed(2) : '0.00'}</td>
-              <td>{revenue1Year2[index].toFixed(2)}</td>
+              <td>{quickModelingPercentageYear2[index] ? quickModelingPercentageYear2[index].toFixed(0) : ''}%</td>
+              <td>${revenue1Year2[index].toFixed(0)}</td>
               <td>{customers1Year2[index]}</td>
               <td>
                 <input
@@ -621,32 +729,35 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>{revenue2Year2[index].toFixed(1)}</td>
+              <td>${revenue2Year2[index].toFixed(0)}</td>
               <td>{customers2Year2[index].toFixed(0)}</td>
             </tr>
           ))}
+          <button className="no-print" onClick={addRowYear2} disabled={visibleColumnsYear2 >= 5}>
+            Add Row Year2
+          </button>
         </tbody>
       </table>
-      <table>
+      <table className="Yaer3Table">
         <thead>
           <tr>
-            <th>Customer Segments At Year 3</th>
+            <th className="segment-column">Customer Segments At Year 3</th>
             <th>Avg Revenue/Customer</th>
             <th>Quick Modeling as % of Revenue</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
             <th>Your %</th>
             <th>Revenue</th>
-            <th>Customers</th>
+            <th className="customers-column">Customers</th>
           </tr>
         </thead>
         <tbody>
-          {segmentNamesYear3.map((segmentNameYear3, index) => (
+        {segmentNamesYear3.slice(0, visibleColumnsYear3).map((segmentNameYear3, index) => (
             <tr key={index}>
               <td>
                 <input
                   type="text"
-                  value={segmentNameYear3}
+                  value={segmentNamesYear3[index]}
                   onChange={(e) => {
                     const newSegmentNamesYear3 = [...segmentNamesYear3];
                     newSegmentNamesYear3[index] = e.target.value;
@@ -654,7 +765,7 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>
+              <td>$
                 <input
                   type="number"
                   value={avgRevenuePerCustomerYear3[index]}
@@ -666,8 +777,8 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>{quickModelingPercentageYear3[index] ? quickModelingPercentageYear3[index].toFixed(2) : '0.00'}</td>
-              <td>{revenue1Year3[index].toFixed(2)}</td>
+              <td>{quickModelingPercentageYear3[index] ? quickModelingPercentageYear3[index].toFixed(0) : '0'}%</td>
+              <td>${revenue1Year3[index].toFixed(0)}</td>
               <td>{customers1Year3[index]}</td>
               <td>
                 <input
@@ -680,12 +791,20 @@ useEffect(() => {
                   }}
                 />
               </td>
-              <td>{revenue2Year3[index].toFixed(1)}</td>
+              <td>${revenue2Year3[index].toFixed(0)}</td>
               <td>{customers2Year3[index].toFixed(0)}</td>
             </tr>
           ))}
+          <button className="no-print" onClick={addRowYear3} disabled={visibleColumnsYear3 >= 5}>
+            Add Row Year3
+          </button>
         </tbody>
       </table>
+      <button className="SaveButton no-print" onClick={handleSave}>Save Form Data</button><button className="no-print" onClick={downloadPdfDocument}>Download as PDF</button>
+
+    
+      </div>
+
     </div>
   );
 }
