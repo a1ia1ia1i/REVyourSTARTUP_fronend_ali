@@ -26,6 +26,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={loggedIn ? <Navigate to="/start" /> : <LoginForm isLoggedIn={handleLogin} />} />
+        <Route path="/login" element={loggedIn ? <Navigate to="/start" /> : <LoginForm isLoggedIn={handleLogin} />} />
         <Route path="/start" element={loggedIn ? <Start setLoggedIn={setLoggedIn} /> : <Navigate to="/" />} />
         {/* Route for registration */}
         <Route path="/register" element={<RegistrationForm setLoggedIn={setLoggedIn}/>} />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './styling/registration.css'
+import { register } from '../api';
 
 export default function RegistrationForm() {
 
@@ -32,13 +33,23 @@ setSubmitted(false);
 };
 
 // Handling the form submission
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
 e.preventDefault();
 if (name === '' || email === '' || password === '') {
 setError(true);
 } else {
-setSubmitted(true);
-setError(false);
+    try{
+        const response = await register(name, email, password);
+        if (response.status === 201) {
+            setSubmitted(true);
+            setError(false);
+        }
+
+    } catch (error) {
+        setError(true);
+    }
+
+
 }
 };
 
