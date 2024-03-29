@@ -9,6 +9,7 @@ function App() {
   return (
     <Router>
       <Routes>
+      <Route path="/home" element={<LandingPage />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegistrationForm />} />
         {/* Redirect from base URL to /register */}

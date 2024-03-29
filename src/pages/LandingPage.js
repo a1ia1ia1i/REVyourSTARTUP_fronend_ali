@@ -1,7 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./styling/LandingPage.css";
 
 const LandingPage = () => {
+  const navigate = useNavigate(); 
+
+  const goToLoginPage = () => {
+    navigate("/login"); 
+  };
     return (
       <div className="landing-container">
         <nav className="navbar">
@@ -9,7 +15,7 @@ const LandingPage = () => {
           <div className="nav-links">
             <a href="/home">Home</a>
             <a href="/about">About</a>
-            <button className="get-started">Get Started</button>
+            <button className="get-started" onClick={goToLoginPage}>Get Started</button>
           </div>
         </nav>
         <header className="header-content">
@@ -17,12 +23,10 @@ const LandingPage = () => {
           <h2>Reverse evaluation of your start up: </h2>
            <h2> Fast, Accurate, Everywhere.</h2>
           <div className="buttons">
-            <button className="get-started">Get Started</button>
+            <button className="get-started" onClick={goToLoginPage}>Get Started</button>
             <button className="about-us">About Us</button>
           </div>
-          {/* You'll need to add the image here */}
           <div className="image-container">
-            {/* Image goes here */}
           </div>
         </header>
       </div>
