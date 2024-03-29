@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
 import Start from './StartPage';
-import LoginForm from './LoginForm';
-import Form from './Registration'; // Import the Form component
+import LoginForm from './pages/Login';
+import RegistrationForm from './pages/Registration';
 import Header from './Header'
 import './App.css';
 import Year1 from './Year1';
@@ -28,7 +28,7 @@ function App() {
         <Route path="/" element={loggedIn ? <Navigate to="/start" /> : <LoginForm isLoggedIn={handleLogin} />} />
         <Route path="/start" element={loggedIn ? <Start setLoggedIn={setLoggedIn} /> : <Navigate to="/" />} />
         {/* Route for registration */}
-        <Route path="/register" element={<Form setLoggedIn={setLoggedIn}/>} />
+        <Route path="/register" element={<RegistrationForm setLoggedIn={setLoggedIn}/>} />
         <Route path="/revForm" element={<RevForm setLoggedIn={setLoggedIn}/> } />
         <Route path="/proForma" element={<ProForma setLoggedIn={setLoggedIn}/> } />
         <Route path="/year1" element={<Year1 setLoggedIn={setLoggedIn}/> } />
