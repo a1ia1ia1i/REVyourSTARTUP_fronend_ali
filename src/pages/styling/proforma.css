@@ -1,0 +1,9 @@
+  .summary-and-calculations {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .summary, .calculations {
+    flex: 1;
+    margin: 10px;
+  }
