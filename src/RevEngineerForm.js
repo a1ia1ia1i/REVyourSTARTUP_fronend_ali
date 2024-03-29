@@ -2,10 +2,10 @@ import React from 'react';
 import Dashboard from './Dashboard';
 
 
-function RevForm() {
+function RevForm({setLoggedIn}) {
   return (
     <div>
-        <Dashboard />
+        <Dashboard setLoggedIn={setLoggedIn}/>
         <h1>Reverse Engineering Form</h1>
     </div>
   );

@@ -1,10 +1,10 @@
 import React from 'react';
 import Dashboard from './Dashboard';
 
-function Year3() {
+function Year3({setLoggedIn}) {
   return (
     <div>
-        <Dashboard />
+        <Dashboard setLoggedIn={setLoggedIn}/>
         <h1>Year 3 Form</h1>
     </div>
   );

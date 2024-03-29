@@ -2,10 +2,10 @@ import React from 'react';
 import Dashboard from './Dashboard';
 
 
-function Depreciation() {
+function Depreciation({setLoggedIn}) {
   return (
     <div>
-        <Dashboard />
+        <Dashboard setLoggedIn={setLoggedIn}/>
         <h1>Depreciation Form</h1>
     </div>
   );

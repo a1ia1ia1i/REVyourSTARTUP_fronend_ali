@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
 import Start from './StartPage';
 import LoginForm from './LoginForm';
-import Dashboard from './Dashboard';
 import Form from './Registration'; // Import the Form component
 import Header from './Header'
 import './App.css';
@@ -26,16 +25,16 @@ function App() {
     <Header />
     <Router>
       <Routes>
-        <Route path="/" element={loggedIn ? <Navigate to="/start" /> : <Start isLoggedIn={handleLogin} />} />
+        <Route path="/" element={loggedIn ? <Navigate to="/start" /> : <Year1 isLoggedIn={handleLogin} />} />
         <Route path="/start" element={loggedIn ? <Start setLoggedIn={setLoggedIn} /> : <Navigate to="/" />} />
         {/* Route for registration */}
-        <Route path="/register" element={<Form />} />
-        <Route path="/revForm" element={<RevForm />} />
-        <Route path="/proForma" element={<ProForma />} />
-        <Route path="/year1" element={<Year1 />} />
-        <Route path="/year2" element={<Year2 />} />
-        <Route path="/year3" element={<Year3 />} />
-        <Route path="/depreciation" element={<Depreciation />} />
+        <Route path="/register" element={<Form setLoggedIn={setLoggedIn}/>} />
+        <Route path="/revForm" element={loggedIn ? <RevForm setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/proForma" element={loggedIn ? <ProForma setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/year1" element={loggedIn ? <Year1 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/year2" element={loggedIn ? <Year2 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/year3" element={loggedIn ? <Year3 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/depreciation" element={loggedIn ? <Depreciation setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
       </Routes>
     </Router>
     </div>

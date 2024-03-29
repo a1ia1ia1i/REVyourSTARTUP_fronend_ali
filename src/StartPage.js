@@ -3,16 +3,12 @@ import Dashboard from './Dashboard';
 
 
 function Start({ setLoggedIn }) {
-    const handleLogout = () => {
-        setLoggedIn(false);
-    }
-
+    
     return (
         
             <div>
-                <Dashboard />
+                <Dashboard setLoggedIn={setLoggedIn}/>
                 <h1>Hello?</h1>
-                <button onClick={handleLogout}>Logout</button>
             </div>
         
     );

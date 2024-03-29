@@ -1,131 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Year1.css';
 import Dashboard from './Dashboard';
 // Example data structure
-const data = {
-  numberOfMonths: 12,
-  revenue: [
-    {
-      name: "Kilter Tilter - Therapy Version",
-      status: "Under by 5",
-      inputData: {
-        deposit: 0,
-        delivedIn: 0,
-        extraMonths: 3,
+
+
+function Year1({ setLoggedIn }) {
+  const objectListTest = [{
+    name: "Kilter Roller Chair",
+    numberToSell: 10,
+    price: 3999
+  },
+  {name: "Kilter Roller",
+  numberToSell: 5,
+  price: 85}];
+  
+  const [customerSegments, setCustomerSegments] = useState([]);
+  const [sources, setSources] = useState([]);
+  const currentDate = new Date();
+
+  const currentYear = currentDate.getFullYear();
+
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const monthsOnly = monthNames.map((month, index) => `${month}-${currentYear}`);
+  const extendedMonths = Array.from({ length: 22 }, (_, index) => `Ext +${index + 1}`);
+  const months = monthsOnly.concat(extendedMonths);
+
+  // Effect to update customerSegments when objectList prop changes
+  useEffect(() => {
+    // Check if objectList is not empty
+    if (objectListTest.length > 0) {
+      const initialMonthlyData = {
+        NumbersSold: 0,
+        Deposit: 0,
+        Original: 0,
+        ExtraFromPreviousMonths: 0,
         commission: 0,
         fixedFees: 0
-      },
-      monthlyData: { /* Monthly data here */ },
-    },
-    {
-      name: "Kilter Roller",
-      status: "You Matched",
-      inputData: {
-        deposit: 0,
-        deliveredIn: 0,
-        extraMonths: 3,
-        commission: 0,
-        fixedFees: 0
-      },
-      monthlyData: { deposit: 0,
-        deliveredIn: 0,
-        extraMonths: 3,
-        commission: 0,
-        fixedFees: 0 },
-    },
-    // Add other products/services as needed
-  ],
-  numberOfSources: 10,
-  sources: [
-    {
-      sourceName: "source1",
-      monthlyData: [
-        {amount: 10}
-      ]
+      }
+      // Create customerSegments array based on objectList
+      const newCustomerSegments = objectListTest.map((item) => ({
+        name: item.name,
+        numberToSell: item.numberToSell,
+        price: item.price,
+        status: 'Pending', // Example status, you can initialize it as needed
+        inputData: {
+          // You can initialize it with default values
+          deposit: 0,
+          delivedIn: 0,
+          extraMonths: 0,
+          commission: 0,
+          fixedFees: 0
+        },
+        monthlyData: Array.from({ length: 34 }, () => ({ ...initialMonthlyData }))
+      }));
+      // Update the state with the new customerSegments array
+      setCustomerSegments(newCustomerSegments);
     }
-  ],
-  numberOfInvestors: 10,
-  funding_investment: [
-    {
-      sourceName: "Friends and Family",
-      monthlyData: [
-        {amount: 25000}
-      ]
-    },
-    {
-      sourceName: "Professional Investors",
-      monthlyData: [
-        {amount: 25000}
-      ]
+  }, []); // Execute effect whenever objectList prop changes
+  
+  useEffect(() => {
+    // Check if customerSegments has been initialized
+    if (customerSegments.length > 0) {
+      // This block will run only after customerSegments has been initialized
+      var customerSegmentsLocal = [...customerSegments]; // Create a copy of customerSegments
+      console.log(customerSegmentsLocal[0]);
+      customerSegmentsLocal[0].name = 'Name ME';
+      console.log(customerSegmentsLocal[0]);
     }
+  }, [customerSegments]);
 
-    
-  ],
-  totalAllMonths: [
-    {
-      amount: 0
-    }
-  ],
-  expenses: [
-    {
-      category: "Marketing Expenses",
-      monthlyData: { deposit: 0,
-        deliveredIn: 0,
-        extraMonths: 3,
-        commission: 0,
-        fixedFees: 0 },
-    },
-    // Add other expense categories as needed
-  ],
-  // Add other sections as needed
-};
-//{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}
-const months = ['Jan-23', 'Feb-23', 'Mar-23', 'Apr-23', 'May-23', 'Jun-23', 'Jul-23', 'Aug-23', 'Sep-23', 'Oct-23', 'Nov-23', 'Dec-23'];
-
-const Year1 = () => {
+  //{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}
+  
   return (
     <div class="year1">
-      <Dashboard></Dashboard>
+      <Dashboard setLoggedIn={setLoggedIn}/>
       <h2>Year 1 Income Overview</h2>
 
-
+      {customerSegments.map(item => (
       <table class="tableizer-table">
         <thead>
           <tr>
             <th>Product/Service</th>
-            <th>Status</th>
+            <th>{item.status}</th>
             {months.map(month => <th key={month}>{month}</th>)}
           </tr>
         </thead>
         <tbody>
-          {data.revenue.map(item => (
             <tr key={item.name}>
               <td>{item.name}</td>
-              <td><tr>{item.status}</tr>
-              <tr>Number of Customers @ </tr>{item.inputData.deposit}
-              <tr>Deposit % </tr><input></input>
+              <td>
+              <tr>Number of Customers @ <span style={{padding: '2px'}}>{item.inputData.deposit}</span></tr>
+              <tr><label for="inp1">Deposit %</label></tr><input name="inp1"></input>
               <tr>Delievered in X months </tr><input></input>
               <tr># of extra months to pay </tr><input></input>
               <tr>Commission as % of income </tr><input></input>
               <tr>Fixed Fees/Customer </tr><input></input></td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
-              <td>{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}</td>
+              {months.map((month, index) => (
+              <td key={index}>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].NumbersSold}</tr>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].Deposit}</tr>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].Original}</tr>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].ExtraFromPreviousMonths}</tr>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].commission}</tr>
+                <tr style={{ padding: '10px', border: '1px solid black' }}>{item.monthlyData[index].fixedFees}</tr>
+              </td>
+              ))}
             </tr>
-
-            
-          ))}
         </tbody>
       </table>
+      ))}
+      {/* 
       <h2>Additional Revenue</h2>
       <table class="tableizer-table">
         <thead>
@@ -545,7 +532,7 @@ const Year1 = () => {
           ))}
         </tbody>
       </table>
-
+          */}
 
       {/* Additional tables for other sections can be generated similarly */}
     </div>
