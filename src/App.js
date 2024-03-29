@@ -29,12 +29,12 @@ function App() {
         <Route path="/start" element={loggedIn ? <Start setLoggedIn={setLoggedIn} /> : <Navigate to="/" />} />
         {/* Route for registration */}
         <Route path="/register" element={<Form setLoggedIn={setLoggedIn}/>} />
-        <Route path="/revForm" element={loggedIn ? <RevForm setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
-        <Route path="/proForma" element={loggedIn ? <ProForma setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
-        <Route path="/year1" element={loggedIn ? <Year1 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
-        <Route path="/year2" element={loggedIn ? <Year2 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
-        <Route path="/year3" element={loggedIn ? <Year3 setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
-        <Route path="/depreciation" element={loggedIn ? <Depreciation setLoggedIn={setLoggedIn}/> : <Navigate to="/"/>} />
+        <Route path="/revForm" element={<RevForm setLoggedIn={setLoggedIn}/> } />
+        <Route path="/proForma" element={<ProForma setLoggedIn={setLoggedIn}/> } />
+        <Route path="/year1" element={<Year1 setLoggedIn={setLoggedIn}/> } />
+        <Route path="/year2" element={<Year2 setLoggedIn={setLoggedIn}/> } />
+        <Route path="/year3" element={<Year3 setLoggedIn={setLoggedIn}/> } />
+        <Route path="/depreciation" element={<Depreciation setLoggedIn={setLoggedIn}/>} />
       </Routes>
     </Router>
     </div>
