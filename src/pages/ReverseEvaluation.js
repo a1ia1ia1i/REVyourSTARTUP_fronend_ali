@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import RevenueChart from './RevenueChart';
 import "./styling/Rev.css"
+import RevenueChart from './RevenueChart.js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
