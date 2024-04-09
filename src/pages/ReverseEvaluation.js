@@ -732,15 +732,15 @@ const handleSave = async () => {
               </td>
               <td>{quickModelingPercentage[index] ? quickModelingPercentage[index].toFixed(0) : ''}%</td>
               
-              <td>{`$${ revenue1[index].toFixed(0) }`}</td>
+              <td>{`$${ revenue1[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
               <td>{customers1[index]}</td>
               <td>
                 <input
                   type="float"
-                  value={yourPercent[index]}
+                  value={`${yourPercent[index]}%`}
                   onChange={(e) => {
                     const newYourPercent = [...yourPercent];
-                    newYourPercent[index] = e.target.value;
+                    newYourPercent[index] = e.target.value.replace(/[^0-9.]/g, '');
                     setYourPercent(newYourPercent);
                   }}
                 />
@@ -794,15 +794,15 @@ const handleSave = async () => {
                 />
               </td>
               <td>{quickModelingPercentageYear2[index] ? quickModelingPercentageYear2[index].toFixed(0) : ''}%</td>
-              <td>${revenue1Year2[index].toFixed(0)}</td>
+              <td>${revenue1Year2[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td>
               <td>{customers1Year2[index]}</td>
               <td>
                 <input
                   type="float"
-                  value={yourPercentYear2[index]}
+                  value={`${yourPercentYear2[index]}%`}
                   onChange={(e) => {
                     const newYourPercentYear2 = [...yourPercentYear2];
-                    newYourPercentYear2[index] = e.target.value;
+                    newYourPercentYear2[index] = e.target.value.replace(/[^0-9.]/g, '');
                     setYourPercentYear2(newYourPercentYear2);
                   }}
                 />
@@ -855,7 +855,7 @@ const handleSave = async () => {
                 />
               </td>
               <td>{quickModelingPercentageYear3[index] ? quickModelingPercentageYear3[index].toFixed(0) : '0'}%</td>
-              <td>{`$${revenue1Year3[index].toFixed(0)}`}</td>
+              <td>{`$${revenue1Year3[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
               <td>{customers1Year3[index]}</td>
               <td>
                 <input
