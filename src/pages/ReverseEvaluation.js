@@ -788,14 +788,9 @@ const handleSave = async () => {
               </td>
               <td className="SegName">
                 <input
-                  type="floatr"
-                  value={avgRevenuePerCustomerYear2[index]}
-                  onChange={(e) => {
-                    const newAvgRevenuePerCustomerYear2 = [...avgRevenuePerCustomerYear2];
-                    const value = parseFloat(e.target.value) || 0; 
-                    newAvgRevenuePerCustomerYear2[index] = value; 
-                    setAvgRevenuePerCustomerYear2(newAvgRevenuePerCustomerYear2)
-                  }}
+                  type="float"
+                  value={`$${avgRevenuePerCustomerYear2[index]}`}
+                  onChange={(e) => handleAvgRevenueChangeYear2(index, e.target.value.replace(/[^0-9.]/g, ''))}
                 />
               </td>
               <td>{quickModelingPercentageYear2[index] ? quickModelingPercentageYear2[index].toFixed(0) : ''}%</td>
@@ -853,15 +848,10 @@ const handleSave = async () => {
                 />
               </td>
               <td>
-                <input
+              <input
                   type="float"
-                  value={avgRevenuePerCustomerYear3[index]}
-                  onChange={(e) => {
-                    const newAvgRevenuePerCustomerYear3 = [...avgRevenuePerCustomerYear3];
-                    const value = parseFloat(e.target.value) || 0; 
-                    newAvgRevenuePerCustomerYear3[index] = value; 
-                    setAvgRevenuePerCustomerYear3(newAvgRevenuePerCustomerYear3)
-                  }}
+                  value={`$${avgRevenuePerCustomerYear3[index]}`}
+                  onChange={(e) => handleAvgRevenueChangeYear3(index, e.target.value.replace(/[^0-9.]/g, ''))}
                 />
               </td>
               <td>{quickModelingPercentageYear3[index] ? quickModelingPercentageYear3[index].toFixed(0) : '0'}%</td>
