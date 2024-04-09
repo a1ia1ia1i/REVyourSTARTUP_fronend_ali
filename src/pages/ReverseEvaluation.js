@@ -9,12 +9,15 @@ import { Link } from 'react-router-dom';
 function ReverseEvaluation() {
   // Calculations for Invest Table
   const [lastYearsRevenue, setLastYearsRevenue] = useState(0);
-  const [amountNeeded, setAmountNeeded] = useState('');
+  const [amountNeeded, setAmountNeeded] = useState(0);
+  const [totalMarket, settotalMarket] = useState(0);
   const [multiplierExpected, setMultiplierExpected] = useState('');
   const [equityPercentage, setEquityPercentage] = useState('');
   const [revenueMultiplierExit, setRevenueMultiplierExit] = useState('');
   const [growthProjection, setGrowthProjection] = useState('');
   const [forceTo, setForceTo] = useState(new Array(6).fill(''));
+
+  
 
   const amountHopedForExit = parseFloat(amountNeeded) * parseFloat(multiplierExpected);
   const companyWorthAtYear3 = amountHopedForExit / (parseFloat(equityPercentage) / 100);
@@ -25,13 +28,13 @@ function ReverseEvaluation() {
     : growthProjection;
   
   // Calculations for Effective Interest
-  const effectiveInterest3Years = amountNeeded > 0 ? Math.pow((amountHopedForExit / amountNeeded), 1 / 3) - 1 : "-";
-  const effectiveInterest5Years = amountNeeded > 0 ? Math.pow((amountHopedForExit / amountNeeded), 1 / 5) - 1 : "-";
-  const effectiveInterest7Years = amountNeeded > 0 ? Math.pow((amountHopedForExit / amountNeeded), 1 / 7) - 1 : "-";
-
+  const effectiveInterest3Years = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 3) - 1) : "-";
+  const effectiveInterest5Years = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 5) - 1): "-";
+  const effectiveInterest7Years = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 7) - 1) : "-";
+  
+ 
   //Reality Check #2
   const [year5Revenue, setYear5Revenue] = useState(0);
-  const [realityCheckMessage, setRealityCheckMessage] = useState("");
 
   // Calculations for Segments At Year 1
   const [segmentNames, setSegmentNames] = useState(new Array(5).fill(''));
@@ -90,13 +93,6 @@ function ReverseEvaluation() {
     });
 }
 
-
-
-const handleSubmit = () => {
-  setSubmitted(true);
-};
-
-
   function calculatePercentYear3(year) {
     switch (year) {
       case 0:
@@ -138,6 +134,8 @@ const handleSubmit = () => {
     }
     return revenue;
   }
+  
+  
 
   // Check if a value is blank or not
   const isBlank = (value) => value === '' || value === null || value === undefined;
@@ -160,32 +158,10 @@ const handleSubmit = () => {
       setGrowthProjection(calculatedGrowthProjection.toFixed(2));
     }
   }, [lastYearsRevenue, revenueNeededYear3]);
+  //Reality Check#1
+  const capturedAtYear5 = totalMarket > 0 ? (calculateRevenue(4) / totalMarket) * 100: 0;
 
-  //Reality Check #2
-  function getRealityCheckMessage(year5Revenue) {
-    if (year5Revenue >= 0.2) {
-      return "NEED TO PROACTIVELY ANSWER";
-    } else if (year5Revenue >= 0.1) {
-      return "You will be asked questions";
-    } else if (year5Revenue >= 0.05) {
-      return "You should be prepared to answer";
-    } else if (year5Revenue >= 0.01) {
-      return "They may not even ask";
-    } else if (year5Revenue < 0.01) {
-      return "Unlikely to get questions";
-    }
-  }  
-  useEffect(() => {
-    if (!isNaN(lastYearsRevenue) && !isNaN(multiplierExpected) && !isNaN(equityPercentage) && !isNaN(revenueMultiplierExit)) {
-      const revenue5 = calculateRevenue(5);
-      if (!isNaN(revenue5)) {
-        setYear5Revenue(revenue5);
-        setRealityCheckMessage(getRealityCheckMessage(revenue5));
-      }
-    }
-  }, [lastYearsRevenue, multiplierExpected, equityPercentage, revenueMultiplierExit, forceTo]); // Include all dependencies here
-  
-
+ 
 
   //Customer Segments At Year 1
 
@@ -278,18 +254,7 @@ const handleSubmit = () => {
     setRevenue2(revenue2Values);
   }, [yourPercent]);
 
-  function calculateCustomers2() {
-    return revenue2.map((rev2, index) => {
-      const avgRev = parseFloat(avgRevenuePerCustomer[index]) || 0; 
-      if (avgRev === 0) return 0; 
-      return parseFloat((rev2 / avgRev).toFixed(0)); 
-    });
-  }
-  
-  useEffect(() => {
-    const newCustomers2 = calculateCustomers2(); 
-    setCustomers2(newCustomers2); 
-  }, [revenue2, avgRevenuePerCustomer]); 
+ 
 
 
   //Customer Segments At Year 2
@@ -379,18 +344,7 @@ useEffect(() => {
 }, [yourPercentYear2]);
 
 
-function calculateCustomers2Year2() {
-  return revenue2Year2.map((rev2Year2, index) => {
-    const avgRevYear2 = parseFloat(avgRevenuePerCustomerYear2[index]) || 0; 
-    if (avgRevYear2 === 0) return 0; 
-    return parseFloat((rev2Year2 / avgRevYear2).toFixed(1)); 
-  });
-}
 
-useEffect(() => {
-  const newCustomers2Year2 = calculateCustomers2Year2(); 
-  setCustomers2Year2(newCustomers2Year2); 
-}, [revenue2Year2, avgRevenuePerCustomerYear2]); 
 
 //Customer Segments At Year 3
 
@@ -481,33 +435,136 @@ useEffect(() => {
 }, [yourPercentYear3]);
 
 
-function calculateCustomers2Year3() {
-  return revenue2Year3.map((rev2Year3, index) => {
-    const avgRevYear3 = parseFloat(avgRevenuePerCustomerYear3[index]) || 0; 
-    if (avgRevYear3 === 0) return 0; 
-    return parseFloat((rev2Year3 / avgRevYear3).toFixed(1)); 
-  });
-}
 
-useEffect(() => {
-  const newCustomers2Year3 = calculateCustomers2Year3(); 
-  setCustomers2Year3(newCustomers2Year3); 
-}, [revenue2Year3, avgRevenuePerCustomerYear3]); 
 
-const handleSave = () => {
+const handleSave = async () => {
+  const mainform_id = 1;
+
+  const effectiveInterest3YearsValue = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 3) - 1) : "-";
+  const effectiveInterest5YearsValue = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 5) - 1) : "-";
+  const effectiveInterest7YearsValue = amountNeeded > 0 ? (Math.pow((amountHopedForExit / amountNeeded), 1 / 7) - 1) : "-";
+
+  const exitYears = {
+    year0: { 
+      percentage: calculatePercentYear3(0) * 100, // Assuming calculatePercentYear3 returns a decimal
+      revenue: calculateRevenue(0),
+      ForceTo: forceTo[0] || "-", // Ensure you have a default or validation for empty values
+    },
+    year1: { 
+      percentage: calculatePercentYear3(1) * 100, 
+      revenue: calculateRevenue(1),
+      ForceTo: forceTo[1] || "-", 
+    },
+    year2: { 
+      percentage: calculatePercentYear3(2) * 100, 
+      revenue: calculateRevenue(2),
+      ForceTo: forceTo[2] || "-", 
+    },
+    year3: { 
+      percentage: calculatePercentYear3(3) * 100, 
+      revenue: calculateRevenue(3),
+      ForceTo: forceTo[3] || "-", 
+    },
+    year4: { 
+      percentage: calculatePercentYear3(4) * 100, 
+      revenue: calculateRevenue(4),
+      ForceTo: forceTo[4] || "-", 
+    },
+    year5: { 
+      percentage: calculatePercentYear3(5) * 100, 
+      revenue: calculateRevenue(5),
+      ForceTo: forceTo[5] || "-", 
+    }
+  };
+  const revenueMultiplier = revenueMultiplierExit;
+
   const formData = {
-    lastYearsRevenue,
-    amountNeeded,
-    multiplierExpected,
-    equityPercentage,
-    revenueMultiplierExit,
-    growthProjection,
-    forceTo,
-    // Include other relevant pieces of state to save
+    valuationParameters: {
+      lastYearTotalRevenue: lastYearsRevenue, 
+      amountNeeded: amountNeeded,
+      revenueMultiplier: multiplierExpected,
+      exitAmount: amountHopedForExit,
+      equityPercentage: equityPercentage,
+      year3CompanyWorth: companyWorthAtYear3,
+      exitRevenueMultiplier: revenueMultiplierExit,
+      revenueNeededYear3: revenueNeededYear3,
+      growthProjection: growthProjection,
+      forceTo,
+      exitYears: exitYears,
+      hit3YearGoals: {
+        lastYearTotalRevenue: lastYearsRevenue,
+        amountNeeded: amountNeeded,
+        "3years": {
+          effectiveInterest: effectiveInterest3YearsValue,
+        },
+        "5years": {
+          effectiveInterest: effectiveInterest5YearsValue,
+        },
+        "7years": {
+          effectiveInterest: effectiveInterest7YearsValue,
+        }
+      },
+      exitAmount: revenueNeededYear3,
+    },
+    
+    realityCheck1: {
+      year5Revenue,
+    },
+    customerSegmentsYear1: segmentNames.map((segmentName, index) => ({
+      segmentName,
+      avgRevenuePerCustomer: avgRevenuePerCustomer[index],
+      yourPercent: yourPercent[index],
+      quickModelingPercentage: quickModelingPercentage[index],
+      revenue1: revenue1[index],
+      customers1: customers1[index],
+      revenue2: revenue2[index],
+      customers2: customers2[index]
+    })),
+    customerSegmentsYear2: segmentNamesYear2.map((segmentName, index) => ({
+      segmentName,
+      avgRevenuePerCustomer: avgRevenuePerCustomerYear2[index],
+      yourPercent: yourPercentYear2[index],
+      quickModelingPercentage: quickModelingPercentageYear2[index],
+      revenue1: revenue1Year2[index],
+      customers1: customers1Year2[index],
+      revenue2: revenue2Year2[index],
+      customers2: customers2Year2[index]
+    })),
+    customerSegmentsYear3: segmentNamesYear3.map((segmentName, index) => ({
+      segmentName,
+      avgRevenuePerCustomer: avgRevenuePerCustomerYear3[index],
+      yourPercent: yourPercentYear3[index],
+      quickModelingPercentage: quickModelingPercentageYear3[index],
+      revenue1: revenue1Year3[index],
+      customers1: customers1Year3[index],
+      revenue2: revenue2Year3[index],
+      customers2: customers2Year3[index]
+    }))
   };
   
-  localStorage.setItem('formData', JSON.stringify(formData));
-  alert('Form data saved successfully!');
+  const apiUrl = `http://localhost:8000/form/rev_form/${mainform_id}`;
+
+  try {
+    const response = await fetch(apiUrl, { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    console.log('Form data submitted successfully:', data);
+    const submissionDetails = `Submission Successful!\n\nForm Data: ${JSON.stringify(data, null, 2)}`;
+    const blob = new Blob([submissionDetails], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+  } catch (error) {
+    console.error('Error submitting form data:', error);
+  }
 };
 
 
@@ -521,68 +578,90 @@ const handleSave = () => {
       <table>
         <tr>
           <td>Last Year's Total Revenue (if relevant)</td>
-          <td><input type="number" value={lastYearsRevenue} onChange={(e) => setLastYearsRevenue(parseFloat(e.target.value))} /></td>
+          <td><input type="float" value={`$${lastYearsRevenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`} onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                        setLastYearsRevenue(parseFloat(value) || 0); 
+                    }}
+                    placeholder="$1,000,000"/></td>
         </tr>
         <tr>
           <td>How much $$ do you need/want?</td>
-          <td><input type="number" value={amountNeeded} onChange={(e) => setAmountNeeded(e.target.value)} /></td>
+          <td><input type="float" value={`$${amountNeeded.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`} onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                        setAmountNeeded(parseFloat(value) || 0); 
+                    }}
+                    placeholder="$1,000,000"/></td>
+           
         </tr>
         <tr>
           <td>Multiplier the investor expects (e.g. 2-10X)</td>
           <td>
-            <input type="number" value={multiplierExpected} onChange={(e) => setMultiplierExpected(e.target.value)} /></td>
+            <input type="integer" value={multiplierExpected} onChange={(e) => setMultiplierExpected(e.target.value.replace(/[^0-9.]/g, ''))} /></td>
         </tr>
         <tr>
           <td>Amount $$$$$ the investor hopes for @Exit</td>
-          <td>${amountHopedForExit.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>{`$${amountHopedForExit.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}`}</td>
         </tr>
         <tr>
           <td>What % of equity are you giving up (e.g. 5-25%)?</td>
-          <td><input type="number" value={equityPercentage} onChange={(e) => setEquityPercentage(e.target.value)} /></td>
+          <td><input type="integer" value={`${equityPercentage}%`} onChange={(e) => setEquityPercentage(e.target.value.replace(/[^0-9.]/g, ''))} /></td>
         </tr>
         <tr>
           <td>What company needs to be worth @ Year 3</td>
-          <td>${companyWorthAtYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>{`$${companyWorthAtYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}`}</td>
         </tr>
         <tr>
           <td>Multiplier of revenue expected at exit (e.g. 2X)</td>
-          <td><input type="number" value={revenueMultiplierExit} onChange={(e) => setRevenueMultiplierExit(e.target.value)} /></td>
+          <td><input type="integer" value={revenueMultiplierExit} onChange={(e) => setRevenueMultiplierExit(e.target.value)} /></td>
         </tr>
         <tr>
           <td>Revenue needed year 3 based upon multiplier</td>
-          <td>${revenueNeededYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}</td>
+          <td>{`$${revenueNeededYear3.toLocaleString(undefined, {maximumFractionDigits:2}) || ''}`}</td>
         </tr>
         <tr>
           <td>Growth Projection % per year (e.g. 500%)</td>
-          <td><input type="number" value={growthProjection} onChange={(e) => setGrowthProjection(e.target.value)} disabled={lastYearsRevenue > 0} /></td>
+          <td><input type="integer" value={`${growthProjection}%`} onChange={(e) => setGrowthProjection(e.target.value.replace(/[^0-9.]/g, ''))} disabled={lastYearsRevenue > 0} /></td>
         </tr>
         <tr>
-          <td  className="EffectiveTable">Effective Interest in 3 Years</td>
-          <td>{typeof effectiveInterest3Years === "number" ? effectiveInterest3Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest3Years}</td>
+          <td  className="EffectiveTable">Effective Interest in 3 Year</td>
+          <td>{typeof effectiveInterest3Years === "number" ? effectiveInterest3Years.toLocaleString(undefined, {style: "percent", maximumFractionDigits: 1}) : effectiveInterest3Years}</td>
         </tr>
         <tr>
           <td>Effective Interest in 5 Years</td>
-          <td>{typeof effectiveInterest5Years === "number" ? effectiveInterest5Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest5Years}</td>
+          <td>{typeof effectiveInterest5Years === "number" ? effectiveInterest5Years.toLocaleString(undefined, {style: "percent", maximumFractionDigits: 1}) : effectiveInterest5Years}</td>
         </tr>
         <tr>
           <td>Effective Interest in 7 Years</td>
-          <td>{typeof effectiveInterest7Years === "number" ? effectiveInterest7Years.toLocaleString(undefined, {style: "percent", minimumFractionDigits:1}) : effectiveInterest7Years}</td>
+          <td>{typeof effectiveInterest7Years === "number" ? effectiveInterest7Years.toLocaleString(undefined, {style: "percent", maximumFractionDigits: 1}) : effectiveInterest7Years}</td>
         </tr>
       </table>
       <table>
-      <thead>
         <tr>
-          <th>Reality Check #2: If my year 5 is this value then</th>
-          <th>Message</th>
+          <td>Reality Check #1: What is the total market? </td>
+          <td><input type="float" value={`$${totalMarket.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`} onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                        settotalMarket(parseFloat(value) || 0); 
+                    }}
+                    placeholder="$1,000,000"/></td>
         </tr>
-      </thead>
-      <tbody>
         <tr>
-          <td>{year5Revenue.toFixed(2)}</td>
-          <td>{realityCheckMessage}</td>
+              <td>Market Capture at Year 5:</td>
+              <td>{capturedAtYear5.toFixed(2)}%</td>
         </tr>
-      </tbody>
+
+  
     </table>
+      <table>
+    
+        <tr>
+          <td>Reality Check #2: If my year 5 is this value then</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+        </tr>
+    </table>
+   
       <table className="RevenueTable">
         <thead>
           <tr>
@@ -596,12 +675,12 @@ const handleSave = () => {
         {[0, 1, 2, 3, 4, 5].map((year) => (
             <tr key={year}>
               <td>{year}</td>
-              <td>{(calculatePercentYear3(year) * 100).toFixed(0)}%</td>
-              <td>${calculateRevenue(year).toFixed(0)}</td>
+              <td>{`${(calculatePercentYear3(year) * 100).toFixed(0)}%`}</td>
+              <td>{`$${calculateRevenue(year).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
               <td>
                 {year === 3 ? '100%' : year === 0 ? '0%' : (
                   <input
-                    type="number"
+                    type="integer"
                     value={forceTo[year]}
                     onChange={(e) => {
                       const newForceTo = [...forceTo];
@@ -634,7 +713,7 @@ const handleSave = () => {
              <tr key={index}>
               <td>
                 <input
-                  type="text"
+                  type="string"
                   value={segmentName}
                   onChange={(e) => {
                     const newSegmentNames = [...segmentNames];
@@ -643,21 +722,21 @@ const handleSave = () => {
                   }}
                 />
               </td>
-              <td>$
+              <td>
                 <input
-                  type="number"
-                  value={avgRevenuePerCustomer[index]}
-                  onChange={(e) => handleAvgRevenueChange(index, e.target.value)
+                  type="float"
+                  value={`$${avgRevenuePerCustomer[index]}`}
+                  onChange={(e) => handleAvgRevenueChange(index, e.target.value.replace(/[^0-9.]/g, ''))
                   }
                 />
               </td>
               <td>{quickModelingPercentage[index] ? quickModelingPercentage[index].toFixed(0) : ''}%</td>
               
-              <td>${ revenue1[index].toFixed(0) }</td>
+              <td>{`$${ revenue1[index].toFixed(0) }`}</td>
               <td>{customers1[index]}</td>
               <td>
                 <input
-                  type="number"
+                  type="float"
                   value={yourPercent[index]}
                   onChange={(e) => {
                     const newYourPercent = [...yourPercent];
@@ -666,8 +745,12 @@ const handleSave = () => {
                   }}
                 />
               </td>
-              <td>${revenue2[index].toFixed(0)}</td>
-              <td>{customers2[index].toFixed(0)}</td>
+              <td>${revenue2[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td>
+              <td> <input
+              type="integer" 
+              value={customers2[index]}
+              onChange={(e) => setCustomers2(index, e.target.value)}
+              /></td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear1} disabled={visibleRowsYear1 >= 5}>
@@ -694,7 +777,7 @@ const handleSave = () => {
             <tr key={index}>
               <td>
                 <input
-                  type="text"
+                  type="string"
                   value={segmentNamesYear2[index]}
                   onChange={(e) => {
                     const newSegmentNamesYear2 = [...segmentNamesYear2];
@@ -703,9 +786,9 @@ const handleSave = () => {
                   }}
                 />
               </td>
-              <td className="SegName">$
+              <td className="SegName">
                 <input
-                  type="number"
+                  type="floatr"
                   value={avgRevenuePerCustomerYear2[index]}
                   onChange={(e) => {
                     const newAvgRevenuePerCustomerYear2 = [...avgRevenuePerCustomerYear2];
@@ -720,7 +803,7 @@ const handleSave = () => {
               <td>{customers1Year2[index]}</td>
               <td>
                 <input
-                  type="number"
+                  type="float"
                   value={yourPercentYear2[index]}
                   onChange={(e) => {
                     const newYourPercentYear2 = [...yourPercentYear2];
@@ -729,8 +812,12 @@ const handleSave = () => {
                   }}
                 />
               </td>
-              <td>${revenue2Year2[index].toFixed(0)}</td>
-              <td>{customers2Year2[index].toFixed(0)}</td>
+              <td>{`$${revenue2Year2[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
+              <td><input
+              type="integer" 
+              value={customers2Year2[index]}
+              onChange={(e) => setCustomers2Year2(index, e.target.value)}
+              /></td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear2} disabled={visibleColumnsYear2 >= 5}>
@@ -756,7 +843,7 @@ const handleSave = () => {
             <tr key={index}>
               <td>
                 <input
-                  type="text"
+                  type="string"
                   value={segmentNamesYear3[index]}
                   onChange={(e) => {
                     const newSegmentNamesYear3 = [...segmentNamesYear3];
@@ -765,9 +852,9 @@ const handleSave = () => {
                   }}
                 />
               </td>
-              <td>$
+              <td>
                 <input
-                  type="number"
+                  type="float"
                   value={avgRevenuePerCustomerYear3[index]}
                   onChange={(e) => {
                     const newAvgRevenuePerCustomerYear3 = [...avgRevenuePerCustomerYear3];
@@ -778,21 +865,25 @@ const handleSave = () => {
                 />
               </td>
               <td>{quickModelingPercentageYear3[index] ? quickModelingPercentageYear3[index].toFixed(0) : '0'}%</td>
-              <td>${revenue1Year3[index].toFixed(0)}</td>
+              <td>{`$${revenue1Year3[index].toFixed(0)}`}</td>
               <td>{customers1Year3[index]}</td>
               <td>
                 <input
-                  type="number"
-                  value={yourPercentYear3[index]}
+                  type="float"
+                  value={`${yourPercentYear3[index]}%`}
                   onChange={(e) => {
                     const newYourPercentYear3 = [...yourPercentYear3];
-                    newYourPercentYear3[index] = e.target.value;
+                    newYourPercentYear3[index] = e.target.value.replace(/[^0-9.]/g, '');
                     setYourPercentYear3(newYourPercentYear3);
                   }}
                 />
               </td>
-              <td>${revenue2Year3[index].toFixed(0)}</td>
-              <td>{customers2Year3[index].toFixed(0)}</td>
+              <td>{`$${revenue2Year3[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
+              <td><input
+              type="integer" 
+              value={customers2Year3[index]}
+              onChange={(e) => setCustomers2Year3(index, e.target.value)}
+              /></td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear3} disabled={visibleColumnsYear3 >= 5}>
@@ -800,7 +891,7 @@ const handleSave = () => {
           </button>
         </tbody>
       </table>
-      <button className="SaveButton no-print" onClick={handleSave}>Save Form Data</button><button className="no-print" onClick={downloadPdfDocument}>Download as PDF</button>
+      <button className="SaveButton no-print" onClick={handleSave}>Submit</button><button className="no-print" onClick={downloadPdfDocument}>Download as PDF</button>
 
     
       </div>
