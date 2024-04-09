@@ -28,6 +28,9 @@ function Year1({ setLoggedIn }) {
   const monthsOnly = monthNames.map((month, index) => `${month}-${currentYear}`);
   const extendedMonths = Array.from({ length: 22 }, (_, index) => `Ext +${index + 1}`);
   const months = monthsOnly.concat(extendedMonths);
+  const addItem = () => {
+
+  }
 
   // Effect to update customerSegments when objectList prop changes
   useEffect(() => {
@@ -39,6 +42,7 @@ function Year1({ setLoggedIn }) {
         Deposit: 0,
         Original: 0,
         ExtraFromPreviousMonths: 0,
+        ExtraFromPreviousMonthsCopy: 0,
         commission: 0,
         fixedFees: 0
       }
@@ -46,12 +50,13 @@ function Year1({ setLoggedIn }) {
       const newCustomerSegments = objectListTest.map((item) => ({
         name: item.name,
         numberToSell: item.numberToSell,
+        numbersToSellOriginal: item.numberToSell,
         price: item.price,
         status: 'Pending', // Example status, you can initialize it as needed
         inputData: {
           // You can initialize it with default values
           deposit: 0,
-          delivedIn: 0,
+          deliveredIn: 0,
           extraMonths: 0,
           commission: 0,
           fixedFees: 0
@@ -62,7 +67,68 @@ function Year1({ setLoggedIn }) {
       setCustomerSegments(newCustomerSegments);
     }
   }, []); // Execute effect whenever objectList prop changes
-  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(customerSegments);
+    // Handle form submission, e.g., send to an API
+  };
+
+  const handleChange = (index, field, value) => {
+    const updatedSegments = [...customerSegments];
+    updatedSegments[index].inputData[field] = +value;
+    
+    setCustomerSegments(updatedSegments);
+  };
+  const handleChangeMonthlyData = (index, indexM, field, value) => {
+    const updatedSegments = [...customerSegments];
+    updatedSegments[index].monthlyData[indexM].NumbersSold = +value;
+    
+    const depositPercent = (updatedSegments[index].inputData.deposit)/100;
+    const deliveredIn = updatedSegments[index].inputData.deliveredIn;
+    const extraMonths = updatedSegments[index].inputData.extraMonths;
+    const commissionPercent = updatedSegments[index].inputData.commission;
+    const fixedFee = updatedSegments[index].inputData.fixedFees;
+    const itemPrice = updatedSegments[index].price;
+    const depositAmount =  Math.ceil((itemPrice)*depositPercent);
+    const numbersSold = updatedSegments[index].monthlyData[indexM].NumbersSold
+
+    updatedSegments[index].monthlyData[indexM].Deposit = depositAmount*numbersSold;
+    updatedSegments[index].numberToSell = updatedSegments[index].numbersToSellOriginal - numbersSold;
+    const amountDue = (itemPrice*numbersSold) - (depositAmount*numbersSold);
+    const amountPerMonth = amountDue/(extraMonths+1);
+    const startingMonth = indexM + deliveredIn;
+
+    console.log("Delivered in X months "+deliveredIn)
+    console.log("current month "+ indexM);
+    console.log("Starting month "+startingMonth);
+
+    
+
+    for (let i = startingMonth; i <= (startingMonth+extraMonths); i++) {
+      if (i==startingMonth) {
+        updatedSegments[index].monthlyData[i].Original = Math.ceil(amountPerMonth);
+      }
+      else {
+        if (updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths!=0) {
+          const extraCopy = updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths
+          if (value==0) {
+            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = 0;
+          } else {
+            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = 0;
+            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(amountPerMonth);
+          }
+        }
+        else {
+          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(amountPerMonth);
+        }
+        console.log("Amount per month "+ amountPerMonth)
+      }
+    }
+
+
+
+    setCustomerSegments(updatedSegments);
+  };
   useEffect(() => {
     // Check if customerSegments has been initialized
     if (customerSegments.length > 0) {
@@ -79,50 +145,63 @@ function Year1({ setLoggedIn }) {
       <Dashboard setLoggedIn={setLoggedIn}/>
       <h2>Year 1 Income Overview</h2>
 
-      {customerSegments.map(item => (
-      <table className="tableizer-table" key={item.name}>
-        <thead>
-          <tr>
-            <th>Product/Service</th>
-            <th>{item.status}</th>
-            {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-            <tr key={item.name}>
-              <td rowSpan={6}>{item.name}</td>
-              <td rowSpan={6}>
-                <table className="nested-table">
-                  <thead></thead>
-                  <tbody>
-                    <tr><td>Number of Customers @ {item.inputData.deposit}</td></tr>
-                    <tr><td>Deposit % <input name="inp1"></input></td></tr>
-                    <tr><td>Delievered in X months <input></input></td></tr>
-                    <tr><td># of extra months to pay <input></input></td></tr>
-                    <tr><td>Commission as % of income <input></input></td></tr>
-                    <tr><td>Fixed Fees/Customer <input></input></td></tr>
-                  </tbody>
-                </table>
-              </td>
-                {months.map((month, index) => (
+      <form onSubmit={handleSubmit}>
+        {customerSegments.map((item, index) => (
+          <table className="tableizer-table" key={item.name}>
+            <thead>
+              <tr>
+                <th>Product/Service</th>
+                <th>Status: {item.numberToSell}</th>
+                {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td rowSpan={6}>{item.name}</td>
+                <td rowSpan={6}>
+                  <table className="nested-table">
+                    <tbody>
+                      <tr><td>Number of Customers @ {item.price}</td></tr>
+                      <tr>
+                        <td>Deposit % <input type="number" name={`depositPercent-${index}`} value={item.inputData.deposit} onChange={e => handleChange(index, 'deposit', e.target.value)} /></td>
+                      </tr>
+                      <tr>
+                        <td>Delivered in X months <input type="number" name={`deliveredInMonths-${index}`} value={item.inputData.deliveredIn} onChange={e => handleChange(index, 'deliveredIn', e.target.value)} /></td>
+                      </tr>
+                      <tr>
+                        <td># of extra months to pay <input type="number" name={`extraMonths-${index}`} value={item.inputData.extraMonths} onChange={e => handleChange(index, 'extraMonths', e.target.value)} /></td>
+                      </tr>
+                      <tr>
+                        <td>Commission as % of income <input type="number" name={`commissionPercent-${index}`} value={item.inputData.commission} onChange={e => handleChange(index, 'commission', e.target.value)} /></td>
+                      </tr>
+                      <tr>
+                        <td>Fixed Fees/Customer <input type="number" name={`fixedFees-${index}`} value={item.inputData.fixedFees} onChange={e => handleChange(index, 'fixedFees', e.target.value)} /></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+                {months.map((month, indexM) => (
                   <td rowSpan={6} key={month} className="td-month">
                     <table className="month-table">
                       <thead></thead>
                         <tbody>
-                          <tr><td className="td-month"><input type="number"></input></td></tr>
-                          <tr><td className="td-month"></td></tr>
-                          <tr><td className="td-month"></td></tr>
-                          <tr><td className="td-month"></td></tr>
-                          <tr><td className="td-month"></td></tr>
-                          <tr><td className="td-month"></td></tr>
+                          <tr><td className="td-month-input"><input type="number" name='NumbersSold' value={item.monthlyData[indexM].NumbersSold} onChange={e => handleChangeMonthlyData(index, indexM,'numbersSold', e.target.value)} ></input></td></tr>
+                          <tr><td className="td-month">{item.monthlyData[indexM].Deposit}</td></tr>
+                          <tr><td className="td-month">{item.monthlyData[indexM].Original}</td></tr>
+                          <tr><td className="td-month">{item.monthlyData[indexM].ExtraFromPreviousMonths}</td></tr>
+                          <tr><td className="td-month">{item.monthlyData[indexM].commission}</td></tr>
+                          <tr><td className="td-month">{item.monthlyData[indexM].fixedFees}</td></tr>
                         </tbody>   
                     </table>
                   </td>
-                ))} 
-            </tr>
-        </tbody>
-      </table>
-      ))}
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        ))}
+        <button type="button" onClick={addItem}>Add Another Item</button>
+        <button type="submit">Submit</button>
+      </form>
       {/* 
       <h2>Additional Revenue</h2>
       <table class="tableizer-table">
