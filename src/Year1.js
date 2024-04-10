@@ -16,6 +16,7 @@ function Year1({ setLoggedIn }) {
   
   
   const [customerSegments, setCustomerSegments] = useState([]);
+  const [additionalRevenue, setAdditionalRevenue] = useState([]);
   const [sources, setSources] = useState([]);
   const currentDate = new Date();
 
@@ -32,6 +33,18 @@ function Year1({ setLoggedIn }) {
 
   }
 
+
+  useEffect(() => {
+    const monthlyData = Array.from({length: 12}, () => ({amount: 0}));
+    const constNumberOfSources = 5;
+    const newAdditionalRevenue = {
+      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: ''})),
+      sources: Array.from({length: constNumberOfSources}, () => ({...monthlyData}))
+    }
+    setAdditionalRevenue(newAdditionalRevenue);
+  })
+  
+ 
   // Effect to update customerSegments when objectList prop changes
   useEffect(() => {
     // Check if objectList is not empty
@@ -202,25 +215,21 @@ function Year1({ setLoggedIn }) {
         <button type="button" onClick={addItem}>Add Another Item</button>
         <button type="submit">Submit</button>
       </form>
-      {/* 
+       
       <h2>Additional Revenue</h2>
-      <table class="tableizer-table">
+      <table class="tableizer-table2">
         <thead>
           <tr>
             <th>Sources</th>
-            {months.map(month => <th key={month}>{month}</th>)}
+            {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
           </tr>
         </thead>
         <tbody>
-          {data.sources.map(source => (
-            <tr>
-              <td><input></input></td>
-              {months.map(month => <td key={month}>{source.monthlyData[month]}<input></input></td>)}
-            </tr>
-          ))}
+          {additionalRevenue.sources.map((source, index) => <tr key={index}>source[index]</tr>)}
+          
         </tbody>
       </table>
-
+      {/*
       <h2>Funding/Investment</h2>
       <table class="tableizer-table">
         <thead>

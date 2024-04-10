@@ -6,6 +6,13 @@
 	font-family: Arial, Helvetica, sans-serif;
 	table-layout: fixed; /* Ensure table respects set widths */
 } 
+.tableizer-table2 {
+	width: 99%;
+	font-size: 12px;
+	border: 1px solid black; 
+	font-family: Arial, Helvetica, sans-serif;
+	table-layout: fixed; /* Ensure table respects set widths */
+} 
 table.nested-table {
 	width: 100%;
 	font-size: 12px;
@@ -16,8 +23,15 @@ table.nested-table {
 .tableizer-table th, .tableizer-table td {
 	text-align: center;
 }
+.tableizer-table2 th, .tableizer-table2 td {
+	text-align: center;
+}
 .tableizer-table th:first-child, .tableizer-table td:first-child,
 .tableizer-table th:nth-child(2), .tableizer-table td:nth-child(2) {
+  width: 10%;
+}
+.tableizer-table2 th:first-child, .tableizer-table2 td:first-child,
+.tableizer-table2 th:nth-child(1), .tableizer-table2 td:nth-child(1) {
   width: 10%;
 }
 .tableizer-table th:not(:first-child):not(:nth-child(2)), 
@@ -30,6 +44,12 @@ table.nested-table {
 	color: #FFF;
 	font-weight: bold;
   }
+  .tableizer-table2 th {
+	background-color: #104E8B; 
+	color: #FFF;
+	font-weight: bold;
+  }
+  
 .headLabel { 
     grid-column: 1 / span 13;
 }
