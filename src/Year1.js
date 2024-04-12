@@ -26,6 +26,23 @@ function Year1({ setLoggedIn }) {
   const [returnReworks, setReturnReworks] = useState([]);
   const [marketingExpenses, setMarketingExpenses] = useState([]);
   const [fixedAssets, setFixedAssets] = useState([]);
+  const [propertyRelated, setPropertyRelated] = useState([]);
+  const [legalAndProfessionalServices, setLegalAndProfessionalServices] = useState([]);
+  const [officeGeneralBusiness, setOfficeGeneralBusiness] = useState([]);
+  const [bankingFees, setBankingFees] = useState([]);
+  const [travelVehicleRelated, setTravelVehicleRelated] = useState([]);
+  const [productionRelated, setProductionRelated] = useState([]);
+  const [otherExpenses, setOtherExpenses] = useState([]);
+  const [salariedWorkers, setSalariedWorkers] = useState([]);
+  const [fullTimeWorkers, setFullTimeWorkers] = useState([]);
+  const [partTimeWorkers, setPartTimeWorkers] = useState([]);
+  const [workersHeadCount, setWorkersHeadCount] = useState([]);
+  const [selectedValue, setSelectedValue] = useState("option1")
+  const [payRollTaxesAndBenefits, setpayRollTaxesAndBenefits] = useState([]);
+
+
+
+
 
   const [sources, setSources] = useState([]);
   const currentDate = new Date();
@@ -81,24 +98,39 @@ function Year1({ setLoggedIn }) {
         monthlyData: Array.from({ length: 34 }, () => ({ ...initialMonthData }))
       }));
       // Update the state with the new customerSegments array
+
       setCustomerSegments(newCustomerSegments);
       const newReturnReworks = objectListTest.map((item) => ({
         name: item.name,
         percentOfRevenue: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData)
+        monthlyData: _.cloneDeep(initialMonthlyData),
+
       }));
       setReturnReworks(newReturnReworks);
+
+      const materialExpensesNames = ["Overall Material/Supplies", "Overall Contract Labor", "Material/Supplies", "Contract Labor", "Packaging", "Shipping"]
+      const newProductionRelated = objectListTest.map((item) => ({
+        name: item.name,
+        expensesList: materialExpensesNames.map((name) => ({
+          sourceName: name,
+          monthlyData: _.cloneDeep(initialMonthlyData),
+        }))
+      }));
+      setProductionRelated(newProductionRelated);
+
     }
     const constNumberOfSources = 5;
     const newAdditionalRevenue = {
       sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
-      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData))
+      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData)),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setAdditionalRevenue(newAdditionalRevenue);
 
     const newFundingInv = {
       sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
-      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData))
+      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData)),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setFundingInv(newFundingInv);
     setTotalIncome(initialMonthlyData);
@@ -130,15 +162,127 @@ function Year1({ setLoggedIn }) {
 
     const newMarketingExpenses = {
       numberOfExpenses: 15,
-      marketingList: Array.from({length: 15}, () => ({sourceName: 'source', monthlyData: _.cloneDeep(initialMonthlyData)}))
+      marketingList: Array.from({length: 15}, () => ({sourceName: 'source', monthlyData: _.cloneDeep(initialMonthlyData)})),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setMarketingExpenses(newMarketingExpenses);
 
     const newFixedAssets = {
       newAcquisitions:  _.cloneDeep(initialMonthlyData),
-      depreciation:  _.cloneDeep(initialMonthlyData)
+      depreciation:  _.cloneDeep(initialMonthlyData),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setFixedAssets(newFixedAssets);
+    const propertyRelatedNames = ["Interest (Mortgage)", "Rent of Lease (business property)", "Rent or lease (vehicles, machinery, and equipment", "Repairs and maintenance", "Depletion", "Other"];
+    const newPropertyRelated = {
+      expensesList: propertyRelatedNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setPropertyRelated(newPropertyRelated);
+
+    const serviceNames = ["Lawyer", "Accounting", "Bookkeeping", "Insurance", "Other"];
+
+    const newLegalAndProfessional = {
+      expensesList: serviceNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setLegalAndProfessionalServices(newLegalAndProfessional);
+    
+    const officeExpensesNames = ["Phone", "Internet", "Utilities", "Office supplies", "Misc. Office Equipment", "Cleaning Service", "Taxes and Licenses"];
+    const newOfficeBusiness = {
+      expensesList: officeExpensesNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setOfficeGeneralBusiness(newOfficeBusiness);
+
+    const bankingFeesNames = ["Interest (Banks/Credit)", "Interest (Other)"];
+    const newBankingFees = {
+      expensesList: bankingFeesNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setBankingFees(newBankingFees);
+
+    const travelExpensesNames = ["Car and Truck expenses", "Travel/Expenses", "Deductible Meals", "Mileage", "Parking/Tools", "Other"];
+    const newTravelExpenses = {
+      expensesList: travelExpensesNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setTravelVehicleRelated(newTravelExpenses);
+
+    const newOtherExpenses = {
+      expensesList: Array.from({ length: 5 }, () => ({
+        sourceName: "Misc.",
+        monthlyData: _.cloneDeep(initialMonthlyData)
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData),
+    };
+    setOtherExpenses(newOtherExpenses);
+
+    const newSalariedWorkers = {
+      workersList: Array.from({ length: 6 }, () => ({
+        description: "Misc.",
+        monthlySalary: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData),
+    };
+    setSalariedWorkers(newSalariedWorkers);
+
+    const newFullTime = {
+      workersList: Array.from({ length: 6 }, () => ({
+        description: "Misc.",
+        monthlySalary: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData),
+    };
+    setFullTimeWorkers(newFullTime);
+
+    const newPartTime = {
+      workersList: Array.from({ length: 6 }, () => ({
+        description: "Misc.",
+        monthlySalary: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData),
+    };
+    setPartTimeWorkers(newPartTime);
+
+    
+    const newHeadCount = {
+      foundersHeadCount: _.cloneDeep(initialMonthlyData),
+      salariedHeadCount: _.cloneDeep(initialMonthlyData),
+      fullTimeHeadCount: _.cloneDeep(initialMonthlyData),
+      partTimeHeadCount: _.cloneDeep(initialMonthlyData),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setWorkersHeadCount(newHeadCount);
+    const taxesAndBenefitsNames = ["Social Security (Rate)", "Social Security (Base)", "Medicare", "Federal Unemployment Tax (FUTA)", "Federal Unemployment Tax (Base)", "State Unemployment Tax (SUTA)", "State Unemployment Tax (Base)", "Employee Pension Programs", "Worker's Compensation", "Employee Health Insurace", "Other Employee Benefit Programs"];
+    const newPayRoll = {
+      payrollList: taxesAndBenefitsNames.map((name) => ({
+        sourceName: name,
+        value: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
+    }
+    setpayRollTaxesAndBenefits(newPayRoll);
+
 
   }, []); // Execute effect whenever objectList prop changes
   const handleSubmit = (e) => {
@@ -482,211 +626,301 @@ function Year1({ setLoggedIn }) {
           </tbody>
         </table>
         <h2>Recurring Expenses</h2>
-          <button type="button" onClick={addItem}>Add Another Item</button>
-          <button type="submit">Submit</button>
+        <h3>Property Related</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {propertyRelated.expensesList && propertyRelated.expensesList.map(expense => <tr key={expense}>
+              <td>{expense.sourceName}</td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {propertyRelated.totalMonthly && propertyRelated.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Legal and Professional Serives</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {legalAndProfessionalServices.expensesList && legalAndProfessionalServices.expensesList.map(expense => <tr key={expense}>
+              <td>{expense.sourceName}</td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {legalAndProfessionalServices.totalMonthly && legalAndProfessionalServices.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Office/General Business</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {officeGeneralBusiness.expensesList && officeGeneralBusiness.expensesList.map(expense => <tr key={expense}>
+              <td>{expense.sourceName}</td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {officeGeneralBusiness.totalMonthly && officeGeneralBusiness.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Banking Fees</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {bankingFees.expensesList && bankingFees.expensesList.map(expense => <tr key={expense}>
+              <td>{expense.sourceName}</td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {bankingFees.totalMonthly && bankingFees.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Travel/Vehicule Related</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {travelVehicleRelated.expensesList && travelVehicleRelated.expensesList.map(expense => <tr key={expense}>
+              <td>{expense.sourceName}</td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {travelVehicleRelated.totalMonthly && travelVehicleRelated.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Production Related</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>              
+            </tr>
+          </thead>
+          <tbody>
+            {productionRelated && productionRelated.map((item, index) => <tr>
+              <td>{item.name}</td>
+              <td>
+                <table className="nested-table">
+                  <thead>
+                    <th></th>
+                    {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+                  </thead>
+                  <tbody>
+                    {item.expensesList && item.expensesList.map(expense => 
+                    <tr key={expense}>
+                      <td>{expense.sourceName}</td>
+                      {expense.monthlyData && expense.monthlyData.map(month => <td><input type="number"></input></td>)}
+                    </tr>)}
+                  </tbody>
+                </table>                
+              </td>    
+            </tr>)}
+          </tbody>
+        </table>
+
+        <h3>Other Expenses</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Expense Name</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {otherExpenses.expensesList && otherExpenses.expensesList.map(expense => <tr key={expense}>
+              <td><input type="string"></input></td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              <td>Total</td>
+              {otherExpenses.totalMonthly && otherExpenses.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Employee Related</h2>
+        <h3>Salaried</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Monthly Salary</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {salariedWorkers.workersList && salariedWorkers.workersList.map(workers => <tr key={workers}>
+              <td><input type="string"></input></td>
+              <td><input type="number"></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              
+              <td className="totalTD" colSpan={2}>Total</td>
+              {salariedWorkers.totalMonthly && salariedWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Hourly Full Time</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Monthly Salary</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {fullTimeWorkers.workersList && fullTimeWorkers.workersList.map(workers => <tr key={workers}>
+              <td><input type="string"></input></td>
+              <td><input type="number"></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              
+              <td className="totalTD" colSpan={2}>Total</td>
+              {fullTimeWorkers.totalMonthly && fullTimeWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Hourly Part Time</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Monthly Salary</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {partTimeWorkers.workersList && partTimeWorkers.workersList.map(workers => <tr key={workers}>
+              <td><input type="string"></input></td>
+              <td><input type="number"></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+            </tr>)}
+            <tr>
+              
+              <td className="totalTD" colSpan={2}>Total</td>
+              {partTimeWorkers.totalMonthly && partTimeWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+        
+        <br></br>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Description</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Founders Head Count</td>
+              {workersHeadCount.foundersHeadCount && workersHeadCount.foundersHeadCount.map(month => <td key={month}>{month.amount}</td>)} 
+            </tr>
+            <tr>
+              <td>Salaried Head Count</td>
+              {workersHeadCount.salariedHeadCount && workersHeadCount.salariedHeadCount.map(month => <td key={month}>{month.amount}</td>)} 
+            </tr>
+            <tr>
+              <td>Full Time Head Count</td>
+              {workersHeadCount.fullTimeHeadCount && workersHeadCount.fullTimeHeadCount.map(month => <td key={month}>{month.amount}</td>)} 
+            </tr>
+            <tr>
+              <td>Part Time Head Count</td>
+              {workersHeadCount.partTimeHeadCount && workersHeadCount.partTimeHeadCount.map(month => <td key={month}>{month.amount}</td>)} 
+            </tr>
+            <tr>
+              <td className="totalTD">Total</td>
+              {workersHeadCount.totalMonthly && workersHeadCount.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <label htmlFor="dropdown">Founder(s) Status:</label>
+        <select id="dropdown" value={selectedValue} onChange={handleChange}>
+          <option value="">-- Please select --</option>
+          <option value="option1">Founder(s) NOT Taxed (in gray below)</option>
+          <option value="option2">Founder(s) Are Taxed as Employees</option>
+        </select>
+        <br></br>
+
+        <h3>Payroll Taxes and Benefits</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Amount</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {payRollTaxesAndBenefits.payrollList && payRollTaxesAndBenefits.payrollList.map(row_item => 
+            <tr key={row_item}>
+              <td>{row_item.sourceName}</td>
+              <td><input type="number"></input></td>
+              {row_item.monthlyData && row_item.monthlyData.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>)}
+            <tr>
+              <td className="totalTD" colSpan={2}>Total</td>
+              {payRollTaxesAndBenefits.totalMonthly && payRollTaxesAndBenefits.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+            </tr>
+            
+          </tbody>
+        </table>
+
+        
+
+        <button type="submit">Submit</button>
         </form>
 
 
 
       {/*
+     
+
     
-      <h2>Recurring Expenses</h2>
-
-      <h4>Property Related</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Legal and Professional Services</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Office/General Business</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Banking Fees</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Travel/Vehicule Related</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Production Related</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>
-            <th>Sources</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-        {data.revenue.map(item => (
-            <tr key={item.name}>
-              <td>{item.name}</td>
-              <td><tr>{item.status}</tr>
-              <tr>Overall Material/Supplies</tr>
-              <tr>Overall Contract Labor</tr>
-              <tr>Material/Supplies</tr>
-              <tr>Contract Labor</tr>
-              <tr>Packaging</tr>
-              <tr>Shipping</tr></td>
-              <td></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Other expenses</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2>Employee Related</h2>
-
-      <h4>Salaried</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Monthly Salary</th>        
-            {months.map(month => <th key={month}># working</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              <td>Amount</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Hourly Full Time</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Monthly Wages</th>        
-            {months.map(month => <th key={month}># working</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              <td>Amount</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4>Hourly Part Time</h4>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Monthly Wages</th>        
-            {months.map(month => <th key={month}># working</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              <td>Amount</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
       <h4>Founder(s) Status</h4>
       <button>Founder(s) are NOT Taxed</button>
       <button>Founder(s) are Taxed</button>

@@ -115,3 +115,7 @@ table.month-table td input {
 table.tableizer-table2 td {
 	border: 1px solid black;
 }
+.totalTD {
+	background-color: #104E8B;
+	color: white;
+}
