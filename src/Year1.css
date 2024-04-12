@@ -2,14 +2,14 @@
 .tableizer-table {
 	width: 99%;
 	font-size: 12px;
-	border: 1px solid black; 
+	border: 2px solid black; 
 	font-family: Arial, Helvetica, sans-serif;
 	table-layout: fixed; /* Ensure table respects set widths */
 } 
 .tableizer-table2 {
 	width: 99%;
 	font-size: 12px;
-	border: 1px solid black; 
+	border: 2px solid black; 
 	font-family: Arial, Helvetica, sans-serif;
 	table-layout: fixed; /* Ensure table respects set widths */
 } 
@@ -19,6 +19,12 @@ table.nested-table {
 	border: 1px solid black; 
 	font-family: Arial, Helvetica, sans-serif;
 	table-layout: fixed; 
+}
+table.month-table td {
+	border: 2px solid black;
+}
+table.nested-table td {
+	border: 2px solid black;
 }
 .tableizer-table th, .tableizer-table td {
 	text-align: center;
@@ -38,6 +44,9 @@ table.nested-table {
 .tableizer-table td:not(:first-child):not(:nth-child(2)) {
   width: 2%;
   
+}
+.tableizer-table2 td button {
+	width: 50%;
 }
 .tableizer-table th {
 	background-color: #104E8B; 
@@ -69,8 +78,6 @@ input[type=number]::-webkit-inner-spin-button {
 	height: 100%;
 	table-layout: fixed;
 }
-
-
 .td-month {
 	position: relative;
 }
@@ -85,13 +92,26 @@ table.month-table tr {
 	text-align: center;
 }
 td input[type="string"] {
-	width: 100%;
-	height: 100%;
-	text-align: right;
-  }
-td input[type="number"] {
 	width: 90%;
 	height: 100%;
 	text-align: right;
+	background-color: yellow;
+  }
+td input[type="number"] {
+	width: 90%;
+	height: 50%;
+	text-align: right;
+	background-color: lightblue;
 }
   
+table.month-table td input {
+	width: 75%;
+	height: 80%;
+	text-align: center;
+	position: relative;
+	background-color: lightblue;
+
+} 
+table.tableizer-table2 td {
+	border: 1px solid black;
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import _ from 'lodash';
 import './Year1.css';
 import Dashboard from './Dashboard';
 // Example data structure
@@ -13,10 +14,19 @@ numberToSell: 5,
 price: 85}];
 
 function Year1({ setLoggedIn }) {
-  
-  
+  const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));    
   const [customerSegments, setCustomerSegments] = useState([]);
   const [additionalRevenue, setAdditionalRevenue] = useState([]);
+  const [fundingInvestment, setFundingInv] = useState([]);
+  const [totalAllIncome, setTotalIncome] = useState([]);
+  const [Distributions, setDistributions] = useState([]);
+  const [cashOnHand, setCashOnHand] = useState([]);
+  const [totalExpenses, setTotalExpenses] = useState([]);
+  const [foundersDraw, setFoundersDraw] = useState([]);
+  const [returnReworks, setReturnReworks] = useState([]);
+  const [marketingExpenses, setMarketingExpenses] = useState([]);
+  const [fixedAssets, setFixedAssets] = useState([]);
+
   const [sources, setSources] = useState([]);
   const currentDate = new Date();
 
@@ -33,24 +43,18 @@ function Year1({ setLoggedIn }) {
 
   }
 
-
-  useEffect(() => {
-    const monthlyData = Array.from({length: 12}, () => ({amount: 0}));
-    const constNumberOfSources = 5;
-    const newAdditionalRevenue = {
-      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: ''})),
-      sources: Array.from({length: constNumberOfSources}, () => ({...monthlyData}))
-    }
-    setAdditionalRevenue(newAdditionalRevenue);
-  })
   
  
   // Effect to update customerSegments when objectList prop changes
   useEffect(() => {
     // Check if objectList is not empty
+    const generateRevenueSources = (length, monthlyData) => ({
+      sourceNames: Array.from({ length }, () => ({ sourceName: 'Source Name' })),
+      sources: Array.from({ length }, () => _.cloneDeep(monthlyData))
+    });
     if (objectListTest.length > 0) {
       console.log("yea Making it baby!")
-      const initialMonthlyData = {
+      const initialMonthData = {
         NumbersSold: 0,
         Deposit: 0,
         Original: 0,
@@ -74,11 +78,68 @@ function Year1({ setLoggedIn }) {
           commission: 0,
           fixedFees: 0
         },
-        monthlyData: Array.from({ length: 34 }, () => ({ ...initialMonthlyData }))
+        monthlyData: Array.from({ length: 34 }, () => ({ ...initialMonthData }))
       }));
       // Update the state with the new customerSegments array
       setCustomerSegments(newCustomerSegments);
+      const newReturnReworks = objectListTest.map((item) => ({
+        name: item.name,
+        percentOfRevenue: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+      }));
+      setReturnReworks(newReturnReworks);
     }
+    const constNumberOfSources = 5;
+    const newAdditionalRevenue = {
+      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
+      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData))
+    }
+    setAdditionalRevenue(newAdditionalRevenue);
+
+    const newFundingInv = {
+      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
+      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData))
+    }
+    setFundingInv(newFundingInv);
+    setTotalIncome(initialMonthlyData);
+
+    const newDistributions = {
+      includeInvestments: true,
+      withInvestments: _.cloneDeep(initialMonthlyData), // Deep copy of initialMonthlyData
+      withoutInvestments: _.cloneDeep(initialMonthlyData) // Another deep copy of initialMonthlyData
+    };
+    setDistributions(newDistributions);
+
+    const newCashOnHand = {
+      excludeDepreciation: true,
+      initialCashOnHand: 0,
+      withDepreciation: _.cloneDeep(initialMonthlyData),
+      withoutDepreciation: _.cloneDeep(initialMonthlyData)
+    }
+    setCashOnHand(newCashOnHand);
+
+    const newTotalExpenses = _.cloneDeep(initialMonthlyData);
+    setTotalExpenses(newTotalExpenses);
+
+
+    const newFoundersDraw = {
+      numberOfFounders: 1,
+      foundersDrawPayArray: Array.from({length: 1}, () => _.cloneDeep(initialMonthlyData)) 
+    }
+    setFoundersDraw(newFoundersDraw);
+
+    const newMarketingExpenses = {
+      numberOfExpenses: 15,
+      marketingList: Array.from({length: 15}, () => ({sourceName: 'source', monthlyData: _.cloneDeep(initialMonthlyData)}))
+    }
+    setMarketingExpenses(newMarketingExpenses);
+
+    const newFixedAssets = {
+      newAcquisitions:  _.cloneDeep(initialMonthlyData),
+      depreciation:  _.cloneDeep(initialMonthlyData)
+    }
+    setFixedAssets(newFixedAssets);
+
   }, []); // Execute effect whenever objectList prop changes
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -212,185 +273,223 @@ function Year1({ setLoggedIn }) {
             </tbody>
           </table>
         ))}
-        <button type="button" onClick={addItem}>Add Another Item</button>
-        <button type="submit">Submit</button>
-      </form>
-       
-      <h2>Additional Revenue</h2>
-      <table class="tableizer-table2">
-        <thead>
-          <tr>
-            <th>Sources</th>
-            {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+        <h2>Additional Revenue</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Sources</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          {additionalRevenue.sources && additionalRevenue.sourceNames && additionalRevenue.sources.map((source, index) => (
+            <tr key={index}>
+              <td><input type="string"></input></td>
+                {Array.isArray(source) && source.map((month, indexM) => (
+              <td key={indexM}>$<input type="number"></input></td>
+              ))}
+            </tr>
+          ))}
+      
+          </tbody>
+        </table>
+        <h2>Funding/Investment</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Sources</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          {fundingInvestment.sources && fundingInvestment.sourceNames && fundingInvestment.sources.map((source, index) => (
+            <tr key={index}>
+              <td><input type="string"></input></td>
+                {Array.isArray(source) && source.map((month, indexM) => (
+              <td key={indexM}>$<input type="number"></input></td>
+              ))}
+            </tr>
+          ))}
+          </tbody>
+        </table>
+        <h2>Total All Income</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {totalAllIncome.map(month => <td>{month.amount}</td>)}
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Distributions</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Include Investments</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><button>Yes</button><button>No</button></td>
+              {Distributions.includeInvestments ? 
+                (Array.isArray(Distributions.withInvestments) && Distributions.withInvestments.length > 0 ?
+                Distributions.withInvestments.map(month => (
+                  <td key={month}>{month.amount}</td>
+                )) 
+                : null)
+                : (Array.isArray(Distributions.withoutInvestments) && Distributions.withoutInvestments.length > 0 ?
+                  Distributions.withoutInvestments.map(month => (
+                    <td key={month}>{month.amount}</td>
+                )) 
+                : null)
+              }
+                
           </tr>
-        </thead>
-        <tbody>
-          {additionalRevenue.sources.map((source, index) => <tr key={index}>source[index]</tr>)}
-          
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+
+        <h2>Cash On Hand</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Exclude Depreciation</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><button>Yes</button><button>No</button></td>
+              {cashOnHand.excludeDepreciation ? 
+                (Array.isArray(cashOnHand.withoutDepreciation) && cashOnHand.withoutDepreciation.length > 0 ?
+                cashOnHand.withoutDepreciation.map(month => (
+                  <td key={month}>{month.amount}</td>
+                )) 
+                : null)
+                : (Array.isArray(cashOnHand.withDepreciation) && cashOnHand.withDepreciation.length > 0 ?
+                  cashOnHand.withDepreciation.map(month => (
+                    <td key={month}>{month.amount}</td>
+                )) 
+                : null)
+              }
+                
+          </tr>
+          </tbody>
+        </table>
+
+        <h2>Expenses</h2>
+        <h3>Total All Expenses</h3>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+            {totalExpenses && totalExpenses.map(month => <td key={month}>{month.amount}</td>)}
+          </tr>
+          </tbody>
+        </table>
+
+
+        <h2>Founder's Draw</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          {foundersDraw.foundersDrawPayArray && foundersDraw.foundersDrawPayArray.map((source, index) => (
+            <tr key={index}>
+                {Array.isArray(source) && source.map((month, indexM) => (
+              <td key={indexM}>{month.amount}</td>
+              ))}
+            </tr>
+          ))}
+      
+          </tbody>
+        </table>
+        
+        <h2>Returns/Rework</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Percent of Revenue</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          {returnReworks && returnReworks.map((source, index) => (
+            <tr key={index}>
+              <td>{source.name}</td>
+              <td><input type="number"></input></td>
+              {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
+                <td key={indexM}>{month.amount}</td>
+              ))}
+            </tr>
+          ))}
+      
+          </tbody>
+        </table>
+
+        <h2>Marketing Expenses</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th>Sources</th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          {marketingExpenses.marketingList && marketingExpenses.marketingList.map((source, index) => (
+            <tr key={index}>
+              <td>{source.sourceName}</td>
+                {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
+              <td key={indexM}>$<input type="number"></input></td>
+              ))}
+            </tr>
+          ))}
+          </tbody>
+        </table> 
+
+        <h2>Fixed Assets</h2>
+        <table class="tableizer-table2">
+          <thead>
+            <tr>
+              <th></th>
+              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>New Acquisitions</td>
+            {fixedAssets.newAcquisitions && fixedAssets.newAcquisitions.map(month => <td key={month}>{month.amount}</td>)}
+          </tr>
+          <tr>
+            <td>Depreciation</td>
+            {fixedAssets.depreciation && fixedAssets.depreciation.map(month => <td key={month}>{month.amount}</td>)}
+
+          </tr>
+      
+          </tbody>
+        </table>
+        <h2>Recurring Expenses</h2>
+          <button type="button" onClick={addItem}>Add Another Item</button>
+          <button type="submit">Submit</button>
+        </form>
+
+
+
       {/*
-      <h2>Funding/Investment</h2>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Sources</th>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.funding_investment.map(source => (
-            <tr>
-              <td>{source.sourceName}<input></input></td>
-              {months.map(month => <td key={month}>{source.monthlyData[month] || '-'}<input></input></td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2>Total All Income</h2>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2>Distributions (Profit First)</h2>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Include Investments</th>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td><button>Yes</button> <button>No  </button></td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2>Cash On Hand</h2>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Exclude Depreciation</th>
-            <th>Starting Amount</th>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td><button>Yes</button>  <button>No </button></td>
-              <td>25000</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-
-      <h2>Expenses</h2>
-      <h3>Total All Expenses</h3>
-      <table class="tableizer-table">
-        <thead>
-
-          <tr>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.expenses.map(expense => (
-            <tr key={expense.category}> 
-              {months.map(month => <td key={month}>{expense.monthlyData[month] || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Founder's Draw</h3>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Returns/Reworks</h3>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>
-            <th>Percent of Revenue</th>
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              <td>10%</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Marketing Expenses</h3>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Fixed Assets</h3>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>        
-            {months.map(month => <th key={month}>{month}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Name</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
+    
       <h2>Recurring Expenses</h2>
 
       <h4>Property Related</h4>
