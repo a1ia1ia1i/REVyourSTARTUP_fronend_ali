@@ -14,14 +14,23 @@ numberToSell: 5,
 price: 85}];
 
 function Year1({ setLoggedIn }) {
-  const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));    
+  const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));
+      
   const [customerSegments, setCustomerSegments] = useState([]);
-  const [additionalRevenue, setAdditionalRevenue] = useState([]);
-  const [fundingInvestment, setFundingInv] = useState([]);
-  const [totalAllIncome, setTotalIncome] = useState([]);
+  const [additionalRevenue, setAdditionalRevenue] = useState({
+    sourceNames: Array.from({ length: 5 }, () => ' '),
+    sources: Array.from({ length: 5 }, () => Array.from({ length: 12 }, () => ({ amount: 0 }))),
+    totalMonthly: Array.from({ length: 12 }, () => ({ amount: 0 }))
+  });  
+  const [fundingInvestment, setFundingInv] = useState({
+    sourceNames: Array.from({ length: 5 }, () => ' '),
+    sources: Array.from({ length: 5 }, () => _.cloneDeep(initialMonthlyData)),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
+  const [totalAllIncome, setTotalIncome] = useState(_.cloneDeep(initialMonthlyData));
   const [Distributions, setDistributions] = useState([]);
   const [cashOnHand, setCashOnHand] = useState([]);
-  const [totalExpenses, setTotalExpenses] = useState([]);
+  const [totalExpenses, setTotalExpenses] = useState(_.cloneDeep(initialMonthlyData));
   const [foundersDraw, setFoundersDraw] = useState([]);
   const [returnReworks, setReturnReworks] = useState([]);
   const [marketingExpenses, setMarketingExpenses] = useState([]);
@@ -42,9 +51,6 @@ function Year1({ setLoggedIn }) {
 
 
 
-
-
-  const [sources, setSources] = useState([]);
   const currentDate = new Date();
 
   const currentYear = currentDate.getFullYear();
@@ -56,19 +62,12 @@ function Year1({ setLoggedIn }) {
   const monthsOnly = monthNames.map((month, index) => `${month}-${currentYear}`);
   const extendedMonths = Array.from({ length: 22 }, (_, index) => `Ext +${index + 1}`);
   const months = monthsOnly.concat(extendedMonths);
-  const addItem = () => {
 
-  }
 
-  
+   
  
   // Effect to update customerSegments when objectList prop changes
   useEffect(() => {
-    // Check if objectList is not empty
-    const generateRevenueSources = (length, monthlyData) => ({
-      sourceNames: Array.from({ length }, () => ({ sourceName: 'Source Name' })),
-      sources: Array.from({ length }, () => _.cloneDeep(monthlyData))
-    });
     if (objectListTest.length > 0) {
       console.log("yea Making it baby!")
       const initialMonthData = {
@@ -95,7 +94,8 @@ function Year1({ setLoggedIn }) {
           commission: 0,
           fixedFees: 0
         },
-        monthlyData: Array.from({ length: 34 }, () => ({ ...initialMonthData }))
+        monthlyData: Array.from({ length: 34 }, () => (_.cloneDeep(initialMonthData))),
+        totalMonthlyData: Array.from({ length: 34 }, () => ({ amount: 0 }))
       }));
       // Update the state with the new customerSegments array
 
@@ -119,21 +119,6 @@ function Year1({ setLoggedIn }) {
       setProductionRelated(newProductionRelated);
 
     }
-    const constNumberOfSources = 5;
-    const newAdditionalRevenue = {
-      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
-      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData)),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setAdditionalRevenue(newAdditionalRevenue);
-
-    const newFundingInv = {
-      sourceNames: Array.from({length: constNumberOfSources}, () => ({sourceName: 'John'})),
-      sources: Array.from({length: constNumberOfSources}, () => _.cloneDeep(initialMonthlyData)),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setFundingInv(newFundingInv);
-    setTotalIncome(initialMonthlyData);
 
     const newDistributions = {
       includeInvestments: true,
@@ -149,10 +134,6 @@ function Year1({ setLoggedIn }) {
       withoutDepreciation: _.cloneDeep(initialMonthlyData)
     }
     setCashOnHand(newCashOnHand);
-
-    const newTotalExpenses = _.cloneDeep(initialMonthlyData);
-    setTotalExpenses(newTotalExpenses);
-
 
     const newFoundersDraw = {
       numberOfFounders: 1,
@@ -292,13 +273,14 @@ function Year1({ setLoggedIn }) {
   };
 
   const handleChange = (index, field, value) => {
-    const updatedSegments = [...customerSegments];
+    const updatedSegments = _.cloneDeep(customerSegments);
     updatedSegments[index].inputData[field] = +value;
     
     setCustomerSegments(updatedSegments);
   };
   const handleChangeMonthlyData = (index, indexM, field, value) => {
-    const updatedSegments = [...customerSegments];
+    
+    const updatedSegments = _.cloneDeep(customerSegments)
     updatedSegments[index].monthlyData[indexM].NumbersSold = +value;
     
     const depositPercent = (updatedSegments[index].inputData.deposit)/100;
@@ -316,48 +298,132 @@ function Year1({ setLoggedIn }) {
     const amountPerMonth = amountDue/(extraMonths+1);
     const startingMonth = indexM + deliveredIn;
 
-    console.log("Delivered in X months "+deliveredIn)
-    console.log("current month "+ indexM);
-    console.log("Starting month "+startingMonth);
-
     
+    console.log("value: "+value);
+    console.log("Prev value: "+customerSegments[index].monthlyData[indexM].NumbersSold);
 
-    for (let i = startingMonth; i <= (startingMonth+extraMonths); i++) {
-      if (i==startingMonth) {
+    for (let i = startingMonth; i <= (startingMonth + extraMonths); i++) {
+      if (i === startingMonth) {
         updatedSegments[index].monthlyData[i].Original = Math.ceil(amountPerMonth);
-      }
-      else {
-        if (updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths!=0) {
-          const extraCopy = updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths
-          if (value==0) {
-            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = 0;
-          } else {
-            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = 0;
-            updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(amountPerMonth);
-          }
+      } else {
+        if (customerSegments[index].monthlyData[indexM].NumbersSold > value) {
+          console.log("higher");
+          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(customerSegments[index].monthlyData[i].ExtraFromPreviousMonths - amountPerMonth);
+        } else if (customerSegments[index].monthlyData[indexM].NumbersSold < value) {
+          console.log("lower");
+          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(customerSegments[index].monthlyData[i].ExtraFromPreviousMonths + amountPerMonth);
         }
-        else {
-          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(amountPerMonth);
-        }
-        console.log("Amount per month "+ amountPerMonth)
       }
     }
-
+    updatedSegments[index].totalMonthlyData = updatedSegments[index].monthlyData.map((data, monthIndex) => {
+      const initialAmount = data.Original || 0;
+      const extraFromPrev = data.ExtraFromPreviousMonths || 0;
+      const depost = data.Deposit || 0;
+      const monthCommission = data.commission || 0;
+      const monthFixedFees = data.fixedFees || 0;
+      return {
+          amount: (initialAmount+extraFromPrev+depost) - (monthCommission + monthFixedFees)
+      };
+  });
+    
 
 
     setCustomerSegments(updatedSegments);
   };
-  useEffect(() => {
-    // Check if customerSegments has been initialized
-    if (customerSegments.length > 0) {
-      // This block will run only after customerSegments has been initialized
-      var customerSegmentsLocal = [...customerSegments]; // Create a copy of customerSegments
-      console.log(customerSegments)
+  const handleSourceNameChange = (stateName, index, newName) => {
+    if (stateName==="additional_revenue") {
+      const newSourceNames = [...additionalRevenue.sourceNames];
+      newSourceNames[index] = newName;
+      setAdditionalRevenue(prev => ({ ...prev, sourceNames: newSourceNames }));
+    } else if (stateName==="funding_investment") {
+      const newSourceNames = [...fundingInvestment.sourceNames];
+      newSourceNames[index] = newName;
+      setFundingInv(prev => ({ ...prev, sourceNames: newSourceNames }));
     }
-  }, [customerSegments]);
-
-  //{months.map(month => <tr key={month}>{item.monthlyData[month] || '-'}</tr>)}
+    console.log(additionalRevenue.sourceNames[index]);
+    
+  };
+  const handleAmountChange = (stateName, sourceIndex, monthIndex, newValue) => {
+    if (stateName==="additional_revenue") {
+      setAdditionalRevenue(prev => {
+        // Update specific source amount at the given month index
+        const newSources = [...prev.sources];
+        newSources[sourceIndex][monthIndex] = { ...newSources[sourceIndex][monthIndex], amount: parseFloat(newValue) || 0 };
   
+        // Recalculate the total for the month across all sources
+        const newTotalMonthly = prev.totalMonthly.map((total, idx) => {
+          if (idx === monthIndex) {
+            // Sum up all sources' amounts for this month
+            const sum = newSources.reduce((acc, source) => acc + (source[idx].amount || 0), 0);
+            return { ...total, amount: sum };
+          }
+          return total;
+        });
+  
+        return { ...prev, sources: newSources, totalMonthly: newTotalMonthly };
+      });
+
+    } else if (stateName==="funding_investment") {
+      setFundingInv(prev => {
+    // Create a new copy of sources to ensure immutability
+        const newSources = prev.sources.map((source, idx) => {
+          if (idx === sourceIndex) {
+            // Only update the month's amount for the current source
+            return source.map((data, idx) => idx === monthIndex ? { ...data, amount: parseFloat(newValue) || 0 } : data);
+          }
+          return source;
+        });
+        // Calculate new totals for the updated month
+        const newTotalMonthly = prev.totalMonthly.map((total, idx) => {
+          if (idx === monthIndex) {
+            // Sum up all sources' amounts for the current month
+            const sum = newSources.reduce((acc, source) => acc + (source[idx].amount || 0), 0);
+            return { ...total, amount: sum };
+          }
+          return total;
+        });
+
+        return {
+          ...prev,
+          sources: newSources,
+          totalMonthly: newTotalMonthly
+        };
+      });
+    }
+  };
+  
+
+
+const addNewSource = (stateName) => {
+  // Define a helper function to update the state
+  const updateState = (setterFunction, newStateName) => {
+    setterFunction(prev => {
+      const newSource = Array.from({ length: 12 }, () => ({ amount: 0 }));
+      const newSourceName = newStateName === "additional_revenue" ? ' ' : ' ';
+
+      const newSourceNames = [...prev.sourceNames, newSourceName];
+      const newSources = [...prev.sources, newSource];
+      const newTotalMonthly = prev.totalMonthly.map(total => ({
+        ...total,
+        amount: total.amount // No change needed, just 0 added
+      }));
+
+      return {
+        ...prev,
+        sourceNames: newSourceNames,
+        sources: newSources,
+        totalMonthly: newTotalMonthly
+      };
+    });
+  };
+
+  // Decide which state to update based on the stateName
+  if (stateName === "additional_revenue") {
+    updateState(setAdditionalRevenue, "additional_revenue");
+  } else if (stateName === "funding_investment") {
+    updateState(setFundingInv, "funding_investment");
+  }
+};
   return (
     <div className="year1">
       <Dashboard setLoggedIn={setLoggedIn}/>
@@ -395,6 +461,9 @@ function Year1({ setLoggedIn }) {
                       <tr>
                         <td>Fixed Fees/Customer <input type="number" name={`fixedFees-${index}`} value={item.inputData.fixedFees} onChange={e => handleChange(index, 'fixedFees', e.target.value)} /></td>
                       </tr>
+                      <tr>
+                        <td>TOTAL</td>
+                      </tr>
                     </tbody>
                   </table>
                 </td>
@@ -409,53 +478,91 @@ function Year1({ setLoggedIn }) {
                           <tr><td className="td-month">{item.monthlyData[indexM].ExtraFromPreviousMonths}</td></tr>
                           <tr><td className="td-month">{item.monthlyData[indexM].commission}</td></tr>
                           <tr><td className="td-month">{item.monthlyData[indexM].fixedFees}</td></tr>
+                          <tr><td className="td-month">{item.totalMonthlyData[indexM].amount}</td></tr>
                         </tbody>   
                     </table>
                   </td>
                 ))}
               </tr>
+                
             </tbody>
           </table>
         ))}
         <h2>Additional Revenue</h2>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
-              <th>Sources</th>
+              <th>Source Names</th>
               {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-          {additionalRevenue.sources && additionalRevenue.sourceNames && additionalRevenue.sources.map((source, index) => (
-            <tr key={index}>
-              <td><input type="string"></input></td>
-                {Array.isArray(source) && source.map((month, indexM) => (
-              <td key={indexM}>$<input type="number"></input></td>
-              ))}
+            {additionalRevenue.sources.map((source, index) => (
+              <tr key={index}>
+                <td>
+                  <input
+                    type="string"
+                    value={additionalRevenue.sourceNames[index]}
+                    onChange={e => handleSourceNameChange("additional_revenue", index, e.target.value)}
+                  />
+                </td>
+                {source.map((monthData, indexM) => (
+                  <td key={indexM}>
+                    $<input
+                      type="number"
+                      value={monthData.amount}
+                      onChange={e => handleAmountChange("additional_revenue", index, indexM, e.target.value)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <td>Total</td>
+              {additionalRevenue.totalMonthly && additionalRevenue.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
             </tr>
-          ))}
-      
+            
           </tbody>
         </table>
+        <button onClick={() => addNewSource("additional_revenue")}>+</button>
         <h2>Funding/Investment</h2>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
-              <th>Sources</th>
+              <th>Source Names</th>
               {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-          {fundingInvestment.sources && fundingInvestment.sourceNames && fundingInvestment.sources.map((source, index) => (
-            <tr key={index}>
-              <td><input type="string"></input></td>
-                {Array.isArray(source) && source.map((month, indexM) => (
-              <td key={indexM}>$<input type="number"></input></td>
+            {fundingInvestment.sources.map((source, index) => (
+              <tr key={index}>
+                <td>
+                  <input
+                    type="string"
+                    value={fundingInvestment.sourceNames[index]}
+                    onChange={e => handleSourceNameChange("funding_investment", index, e.target.value)}
+                  />
+                </td>
+                {source.map((monthData, monthIndex) => (
+                  <td key={monthIndex}>
+                    $<input
+                      type="number"
+                      value={monthData.amount}
+                      onChange={e => handleAmountChange("funding_investment", index, monthIndex, e.target.value)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr>
+              <td>Total</td>
+              {fundingInvestment.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>
               ))}
             </tr>
-          ))}
           </tbody>
         </table>
+        <button onClick={() => addNewSource("funding_investment")}>+</button>
         <h2>Total All Income</h2>
         <table class="tableizer-table2">
           <thead>
@@ -917,56 +1024,7 @@ function Year1({ setLoggedIn }) {
 
 
 
-      {/*
-     
-
-    
-      <h4>Founder(s) Status</h4>
-      <button>Founder(s) are NOT Taxed</button>
-      <button>Founder(s) are Taxed</button>
-
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-                  
-            {months.map(month => <th key={month}># working</th>)}
-          </tr>
-        </thead>
-        <tbody>
-
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Founders Head Count</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Payroll Taxes and Benefits</h3>
-      <table class="tableizer-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            {months.map(month => <th key={month}># working</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          
-          {data.totalAllMonths.map(source => (
-            <tr>
-              <td>Social Security (Rate)</td>
-              <td>Number</td>
-              {months.map(month => <td key={month}>{source.amount || '-'}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-          */}
-
-      {/* Additional tables for other sections can be generated similarly */}
+      
     </div>
   );
 };
