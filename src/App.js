@@ -10,7 +10,7 @@ import ReverseEvaluation from './pages/ReverseEvaluation';
 import ProForma from './pages/proForma';
 import Year2 from './Year2Form';
 import Year3 from './Year3Form';
-import Depreciation from './DepreciationForm';
+import Depreciation from './pages/depreciation';
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);

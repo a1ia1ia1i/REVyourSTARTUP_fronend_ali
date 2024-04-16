@@ -38,7 +38,7 @@
   /* Adjustments for visual separation and emphasis */
   .calculated-compensations h3, .summary h3 {
     text-align: center;
-    color: blue;
+    color: white;
   }
 
   .error-message {
