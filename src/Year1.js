@@ -25,7 +25,7 @@ function Year1({ setLoggedIn }) {
   const [fundingInvestment, setFundingInv] = useState({
     sourceNames: Array.from({ length: 5 }, () => ' '),
     sources: Array.from({ length: 5 }, () => _.cloneDeep(initialMonthlyData)),
-    totalMonthly: _.cloneDeep(initialMonthlyData)
+    totalMonthly: Array.from({ length: 12 }, () => ({ amount: 0 }))
   });
   const [totalAllIncome, setTotalIncome] = useState(_.cloneDeep(initialMonthlyData));
   const [Distributions, setDistributions] = useState([]);
@@ -75,7 +75,6 @@ function Year1({ setLoggedIn }) {
         Deposit: 0,
         Original: 0,
         ExtraFromPreviousMonths: 0,
-        ExtraFromPreviousMonthsCopy: 0,
         commission: 0,
         fixedFees: 0
       }
@@ -141,9 +140,29 @@ function Year1({ setLoggedIn }) {
     }
     setFoundersDraw(newFoundersDraw);
 
+    const newMarketingExpensesNames = [
+      "Brand-Related Expenses",
+      "Owned Media (blogs…etc)",
+      "Public Relations",
+      "Content Creation",
+      "Marketing Analytics",
+      "Marketing Research",
+      "Conferences",
+      "Trade Shows",
+      "Marketing Training",
+      "Sales Support Tools",
+      "Website Expenses",
+      "Mobile Platform Expenses",
+      "Social Media Marketing",
+      "Affiliate Marketing",
+      "Traditional Media"
+    ];
     const newMarketingExpenses = {
       numberOfExpenses: 15,
-      marketingList: Array.from({length: 15}, () => ({sourceName: 'source', monthlyData: _.cloneDeep(initialMonthlyData)})),
+      marketingList: newMarketingExpensesNames.map((name) => ({
+        sourceName: name,
+        monthlyData: _.cloneDeep(initialMonthlyData),
+      })),
       totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setMarketingExpenses(newMarketingExpenses);
@@ -278,57 +297,66 @@ function Year1({ setLoggedIn }) {
     
     setCustomerSegments(updatedSegments);
   };
-  const handleChangeMonthlyData = (index, indexM, field, value) => {
-    
-    const updatedSegments = _.cloneDeep(customerSegments)
-    updatedSegments[index].monthlyData[indexM].NumbersSold = +value;
-    
-    const depositPercent = (updatedSegments[index].inputData.deposit)/100;
-    const deliveredIn = updatedSegments[index].inputData.deliveredIn;
-    const extraMonths = updatedSegments[index].inputData.extraMonths;
-    const commissionPercent = updatedSegments[index].inputData.commission;
-    const fixedFee = updatedSegments[index].inputData.fixedFees;
-    const itemPrice = updatedSegments[index].price;
-    const depositAmount =  Math.ceil((itemPrice)*depositPercent);
-    const numbersSold = updatedSegments[index].monthlyData[indexM].NumbersSold
-
-    updatedSegments[index].monthlyData[indexM].Deposit = depositAmount*numbersSold;
-    updatedSegments[index].numberToSell = updatedSegments[index].numbersToSellOriginal - numbersSold;
-    const amountDue = (itemPrice*numbersSold) - (depositAmount*numbersSold);
-    const amountPerMonth = amountDue/(extraMonths+1);
-    const startingMonth = indexM + deliveredIn;
-
-    
-    console.log("value: "+value);
-    console.log("Prev value: "+customerSegments[index].monthlyData[indexM].NumbersSold);
-
-    for (let i = startingMonth; i <= (startingMonth + extraMonths); i++) {
-      if (i === startingMonth) {
-        updatedSegments[index].monthlyData[i].Original = Math.ceil(amountPerMonth);
-      } else {
-        if (customerSegments[index].monthlyData[indexM].NumbersSold > value) {
-          console.log("higher");
-          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(customerSegments[index].monthlyData[i].ExtraFromPreviousMonths - amountPerMonth);
-        } else if (customerSegments[index].monthlyData[indexM].NumbersSold < value) {
-          console.log("lower");
-          updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths = Math.ceil(customerSegments[index].monthlyData[i].ExtraFromPreviousMonths + amountPerMonth);
-        }
-      }
+  const sumArray = (arr1, arr2) => {
+    const result = [];
+    for (let i = 0; i < arr1.length; i++) {
+      result.push({ amount: arr1[i].amount + arr2[i].amount });
     }
-    updatedSegments[index].totalMonthlyData = updatedSegments[index].monthlyData.map((data, monthIndex) => {
-      const initialAmount = data.Original || 0;
-      const extraFromPrev = data.ExtraFromPreviousMonths || 0;
-      const depost = data.Deposit || 0;
-      const monthCommission = data.commission || 0;
-      const monthFixedFees = data.fixedFees || 0;
-      return {
-          amount: (initialAmount+extraFromPrev+depost) - (monthCommission + monthFixedFees)
-      };
-  });
+    return result;
+  };
+  useEffect(() => {
+    const newTotalMonthly = sumArray(additionalRevenue.totalMonthly, fundingInvestment.totalMonthly);
+    setTotalIncome(newTotalMonthly);
+  }, [fundingInvestment, additionalRevenue]);
+  const handleChangeMonthlyData = (index, indexM, field, value) => {
+    const updatedSegments = _.cloneDeep(customerSegments);
+    const previousNumbersSold = updatedSegments[index].monthlyData.map(month => month.NumbersSold);  // Capture previous numbers sold for all months
+  
+    updatedSegments[index].monthlyData[indexM].NumbersSold = +value;  // Directly update the numbers sold for the selected month
+  
+    // Reset ExtraFromPreviousMonths to 0 for recalculation
+    updatedSegments[index].monthlyData.forEach(month => month.ExtraFromPreviousMonths = 0);
+    // Calculate the total numbers sold after the update
+    const totalNumbersSold = updatedSegments[index].monthlyData.reduce((acc, month) => acc + month.NumbersSold, 0);
     
-
-
+    // Update the numberToSell for the segment
+    updatedSegments[index].numberToSell = updatedSegments[index].numbersToSellOriginal - totalNumbersSold;
+  
+    // Loop through each month to recalculate based on the current numbers sold
+    updatedSegments[index].monthlyData.forEach((monthData, currentMonth) => {
+      const numbersSold = monthData.NumbersSold;
+      const { deposit, deliveredIn, extraMonths, commission, fixedFees } = updatedSegments[index].inputData;
+      const depositPercent = deposit / 100;
+      const itemPrice = updatedSegments[index].price;
+      const depositAmount = Math.ceil(itemPrice * depositPercent);
+      const commissionPercentage = commission/100;
+      monthData.Deposit = depositAmount * numbersSold;
+  
+      const amountDue = (itemPrice * numbersSold) - (depositAmount * numbersSold);
+      const amountPerMonth = amountDue / (extraMonths + 1);
+      const startingMonth = currentMonth + deliveredIn;
+      if ((startingMonth)<34) {
+        updatedSegments[index].monthlyData[startingMonth].Original = Math.ceil(amountPerMonth);
+      }
+      // Apply the calculated changes to all relevant future months
+      for (let i = startingMonth+1; i < updatedSegments[index].monthlyData.length && i <= startingMonth + extraMonths; i++) {
+        updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths += Math.ceil(amountPerMonth);
+      }
+      monthData.commission = ((monthData.Deposit+monthData.Original+monthData.ExtraFromPreviousMonths)*commissionPercentage);
+      monthData.fixedFees = (fixedFees*numbersSold);
+    });
+  
+    // Recalculate the total for each month
+    updatedSegments[index].totalMonthlyData = updatedSegments[index].monthlyData.map((data) => {
+      const totalAmount = (data.Original + data.ExtraFromPreviousMonths + data.Deposit) - (data.commission + data.fixedFees);
+      return { amount: totalAmount };
+    });
+  
+    // Update the main state with the new customerSegments array
     setCustomerSegments(updatedSegments);
+  };
+  const handleDropdownChange = (event) => {
+    setSelectedValue(event.target.value);
   };
   const handleSourceNameChange = (stateName, index, newName) => {
     if (stateName==="additional_revenue") {
@@ -986,8 +1014,8 @@ const addNewSource = (stateName) => {
         </table>
         <br></br>
         <label htmlFor="dropdown">Founder(s) Status:</label>
-        <select id="dropdown" value={selectedValue} onChange={handleChange}>
-          <option value="">-- Please select --</option>
+        <select id="dropdown" value={selectedValue} onChange={handleDropdownChange}>
+          <option value="option0">-- Please select --</option>
           <option value="option1">Founder(s) NOT Taxed (in gray below)</option>
           <option value="option2">Founder(s) Are Taxed as Employees</option>
         </select>
