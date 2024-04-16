@@ -1,5 +1,5 @@
         import React, { useState } from 'react';
-        import './styling/deoreciation'
+        import './styling/depreciation.css'
 
         function Depcreciation() {
 
