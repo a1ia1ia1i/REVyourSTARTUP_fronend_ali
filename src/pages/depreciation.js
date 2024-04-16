@@ -90,7 +90,7 @@
         let sumOfMonthDigits = (monthsLeft * (monthsLeft + 1)) / 2;
         let sumDepreciations = 0;
         for (let i = 0; i < 36; i++) {
-          let totalMonths = monthsLeft - (i - 1);
+          let totalMonths = monthsLeft - i;
           let depreciation = (values.valueAtTime - values.salvageValue) * (totalMonths) / sumOfMonthDigits;
           monthlyDepreciations.push(depreciation);
           sumDepreciations += depreciation;
