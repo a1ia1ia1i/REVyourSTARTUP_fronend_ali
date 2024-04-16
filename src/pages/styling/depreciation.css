@@ -5,7 +5,7 @@
     margin: 0 auto;
     padding: 20px;
   }
-  
+   
   .proForma-container {
       display: flex;
       flex-direction: row; /* Aligns children in a row instead of a column */

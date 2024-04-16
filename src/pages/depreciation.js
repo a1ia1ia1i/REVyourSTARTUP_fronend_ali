@@ -1,4 +1,5 @@
         import React, { useState } from 'react';
+        import './styling/deoreciation'
 
         function Depcreciation() {
 
@@ -14,7 +15,7 @@
         });
 
         let methods = [
-        {label: "Straight-Line", value: "Straight Line"},
+        {label: "Straight-Line", value: "Straight Line"}, 
         {label: "Sum of the Months", value: "Sum of the Months"},
         {label: "Double Declining Balance", value: "Double Declining Balance"}
         ]
