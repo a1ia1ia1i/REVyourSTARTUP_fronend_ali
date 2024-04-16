@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './styling/proforma.css';
 
 function ProForma() {
   const [values, setValues] = useState({

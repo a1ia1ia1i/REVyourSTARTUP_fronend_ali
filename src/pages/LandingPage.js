@@ -26,8 +26,6 @@ const LandingPage = () => {
             <button className="get-started" onClick={goToLoginPage}>Get Started</button>
             <button className="about-us">About Us</button>
           </div>
-          <div className="image-container">
-          </div>
         </header>
       </div>
     );

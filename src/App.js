@@ -7,7 +7,7 @@ import Header from './Header'
 import './App.css';
 import Year1 from './Year1';
 import ReverseEvaluation from './pages/ReverseEvaluation';
-import ProForma from './ProForma';
+import ProForma from './pages/proForma';
 import Year2 from './Year2Form';
 import Year3 from './Year3Form';
 import Depreciation from './DepreciationForm';
@@ -30,7 +30,7 @@ function App() {
         <Route path="/start" element={loggedIn ? <Start setLoggedIn={setLoggedIn} /> : <Navigate to="/" />} />
         {/* Route for registration */}
         <Route path="/register" element={<RegistrationForm setLoggedIn={setLoggedIn}/>} />
-        <Route path="/ReverseEvaluation" element={<ReverseEvaluation />} />
+        <Route path="/revForm" element={<ReverseEvaluation setLoggedIn={setLoggedIn}/> } />
         <Route path="/proForma" element={<ProForma setLoggedIn={setLoggedIn}/> } />
         <Route path="/year1" element={<Year1 setLoggedIn={setLoggedIn}/> } />
         <Route path="/year2" element={<Year2 setLoggedIn={setLoggedIn}/> } />
