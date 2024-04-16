@@ -4,6 +4,9 @@ import "./styling/Rev.css"
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
+import ReactDOMServer from 'react-dom/server';
+import { openPdfWindow } from './PdfGenerator';
+
 
 
 function ReverseEvaluation() {
@@ -44,7 +47,7 @@ function ReverseEvaluation() {
   const [revenue1, setRevenue1] = useState(new Array(5).fill(0));
   const [customers1, setCustomers1] = useState(new Array(5).fill(0));
   const [revenue2, setRevenue2] = useState(new Array(5).fill(0));
-  const [customers2, setCustomers2] = useState(new Array(5).fill(0));
+  const [customers2Year1, setCustomers2Year1] = useState(new Array(5).fill(0));
   const [visibleRowsYear1, setVisibleRowsYear1] = useState(1);
 
   // Calculations for Segments At Year 2
@@ -71,27 +74,27 @@ function ReverseEvaluation() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const downloadPdfDocument = () => {
-    // Temporarily hide the buttons
-    const noPrintElements = document.querySelectorAll('.no-print');
-    noPrintElements.forEach(el => el.classList.add('hide-elements'));
-
-    const input = document.getElementById('form-content');
-    html2canvas(input).then((canvas) => {
-        // Once the canvas is ready, remove the class to show the buttons again
-        noPrintElements.forEach(el => el.classList.remove('hide-elements'));
-
+  function downloadPDF() {
+    console.log('Attempting to generate PDF...'); // Debugging log
+    html2canvas(document.body).then(canvas => {
+        console.log('Canvas is ready'); // Debugging log
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
+        console.log('Image data created'); // Debugging log
+        const pdf = new jsPDF.jsPDF({
             orientation: 'portrait',
         });
         const imgProps = pdf.getImageProperties(imgData);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        console.log('Image added to PDF'); // Debugging log
         pdf.save("download.pdf");
+        console.log('PDF has been saved'); // Debugging log
+    }).catch(error => {
+        console.error('Error generating PDF:', error); // Error handling
     });
 }
+
 
   function calculatePercentYear3(year) {
     switch (year) {
@@ -151,6 +154,9 @@ function ReverseEvaluation() {
     year: year.toString(),
     revenue: calculateRevenue(year),
   }));
+  useEffect(() => {
+    console.log("Updated Chart Data:", chartData);
+}, [chartData]);
 
 
   useEffect(() => {
@@ -175,11 +181,7 @@ function ReverseEvaluation() {
     setAvgRevenuePerCustomer(updatedValues);
   };
 
-  const handleYourPercentChange = (index, value) => {
-    const updatedValues = [...yourPercent];
-    updatedValues[index] = value !== '' ? value : '0';
-    setYourPercent(updatedValues);
-  };
+  
 
   function calculateQuickModelingPercentages(avgRevenuePerCustomer) {
     const avgRevenues = avgRevenuePerCustomer.map(avg => parseFloat(avg) || 0);
@@ -254,7 +256,11 @@ function ReverseEvaluation() {
     setRevenue2(revenue2Values);
   }, [yourPercent]);
 
- 
+  const handleCustomers2Year1Change = (index, value) => {
+    const updatedValues = [...customers2Year1]; 
+    updatedValues[index] = parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
+    setCustomers2Year1(updatedValues);
+};
 
 
   //Customer Segments At Year 2
@@ -344,6 +350,11 @@ useEffect(() => {
 }, [yourPercentYear2]);
 
 
+const handleCustomers2Year2Change = (index, value) => {
+  const updatedValues = [...customers2Year2]; 
+  updatedValues[index] = parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
+  setCustomers2Year2(updatedValues);
+};
 
 
 //Customer Segments At Year 3
@@ -435,6 +446,11 @@ useEffect(() => {
 }, [yourPercentYear3]);
 
 
+const handleCustomers2Year3Change = (index, value) => {
+  const updatedValues = [...customers2Year3]; 
+  updatedValues[index] = parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
+  setCustomers2Year3(updatedValues);
+};
 
 
 const handleSave = async () => {
@@ -508,7 +524,8 @@ const handleSave = async () => {
     },
     
     realityCheck1: {
-      year5Revenue,
+      totalMarket: totalMarket,
+      capturedAtYear5: capturedAtYear5
     },
     customerSegmentsYear1: segmentNames.map((segmentName, index) => ({
       segmentName,
@@ -518,9 +535,9 @@ const handleSave = async () => {
       revenue1: revenue1[index],
       customers1: customers1[index],
       revenue2: revenue2[index],
-      customers2: customers2[index]
-    })),
-    customerSegmentsYear2: segmentNamesYear2.map((segmentName, index) => ({
+      customers2: customers2Year1[index]
+  })).filter(isSegmentValid), // Apply the filter here
+  customerSegmentsYear2: segmentNamesYear2.map((segmentName, index) => ({
       segmentName,
       avgRevenuePerCustomer: avgRevenuePerCustomerYear2[index],
       yourPercent: yourPercentYear2[index],
@@ -529,8 +546,8 @@ const handleSave = async () => {
       customers1: customers1Year2[index],
       revenue2: revenue2Year2[index],
       customers2: customers2Year2[index]
-    })),
-    customerSegmentsYear3: segmentNamesYear3.map((segmentName, index) => ({
+  })).filter(isSegmentValid), // Apply the filter here
+  customerSegmentsYear3: segmentNamesYear3.map((segmentName, index) => ({
       segmentName,
       avgRevenuePerCustomer: avgRevenuePerCustomerYear3[index],
       yourPercent: yourPercentYear3[index],
@@ -539,8 +556,11 @@ const handleSave = async () => {
       customers1: customers1Year3[index],
       revenue2: revenue2Year3[index],
       customers2: customers2Year3[index]
-    }))
-  };
+  })).filter(isSegmentValid) // Apply the filter here
+};
+function isSegmentValid(segment) {
+  return segment.segmentName.trim() !== '' && parseFloat(segment.avgRevenuePerCustomer) > 0;
+}
   
   const apiUrl = `http://localhost:8000/form/rev_form/${mainform_id}`;
 
@@ -558,14 +578,176 @@ const handleSave = async () => {
     }
 
     const data = await response.json();
-    console.log('Form data submitted successfully:', data);
-    const submissionDetails = `Submission Successful!\n\nForm Data: ${JSON.stringify(data, null, 2)}`;
-    const blob = new Blob([submissionDetails], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    openNewWindowWithFormData(data);
   } catch (error) {
     console.error('Error submitting form data:', error);
   }
 };
+
+const handleOpenNewWindow = () => {
+  const chartData = [0, 1, 2, 3, 4, 5].map(year => ({
+      year: year.toString(),
+      revenue: calculateRevenue(year),
+  }));
+
+  
+
+  const dataString = prepareDataString(); 
+
+  const newWindow = window.open("", "_blank");
+  newWindow.document.write(`
+      <html>
+      <head>
+          <title>Reverse Engineer Valuation Calculation Results</title>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0-rc.7/html2canvas.min.js"></script>
+      </head>
+      <body>
+          ${dataString}
+          <h2>Revenue Graph</h2>
+          <div id="chart-container"></div>
+          <button onclick="downloadPDF()">Download as PDF</button>
+          <script>
+              const chartData = ${JSON.stringify(chartData)};
+              ReactDOM.hydrate(React.createElement(RevenueChart, {data: chartData}), document.getElementById('chart-container'));
+
+              function downloadPDF() {
+                  html2canvas(document.body).then(canvas => {
+                      const imgData = canvas.toDataURL('image/png');
+                      const pdf = new jsPDF.jsPDF({
+                          orientation: 'portrait',
+                      });
+                      const imgProps = pdf.getImageProperties(imgData);
+                      const pdfWidth = pdf.internal.pageSize.getWidth();
+                      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                      pdf.save("download.pdf");
+                  }).catch(error => console.error('Error generating PDF:', error));
+              }
+          </script>
+      </body>
+      </html>
+  `);
+  newWindow.document.close();
+};
+
+
+const openNewWindowWithFormData = (data) => {
+  const displayElement = document.getElementById('result-display');
+    const formattedData = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    displayElement.innerHTML = formattedData;
+}
+
+
+const prepareDataString = () => {
+  // Function to create HTML for revenue data
+  const formatPercentage = (value) => {
+    return `${(value * 100).toFixed(1)}%`; // Multiplies by 100 and rounds to 1 decimal place
+};
+  const createRevenueDataTable = () => {
+      const rows = chartData.map(data => 
+          `<tr>
+              <td>${data.year}</td>
+              <td>$${parseInt(data.revenue).toLocaleString()}</td>
+          </tr>`
+      ).join("");
+      return `
+          <table>
+              <thead>
+                  <tr>
+                      <th>Year</th>
+                      <th>Revenue</th>
+                  </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+          </table>
+      `;
+  };
+  const isRowValid = (segment) => {
+    return segment.segmentName.trim() !== '' && parseFloat(segment.avgRevenuePerCustomer) > 0;
+};
+
+  // Function to create HTML for customer segment data
+  const createSegmentDataTable = (segmentNames, avgRevenuePerCustomer, yourPercent, quickModelingPercentage, revenue1, customers1, revenue2, customers2) => {
+      const rows = segmentNames.map((segment, index) => {
+        const segmentData = {
+          segmentName: segmentNames[index],
+          avgRevenuePerCustomer: avgRevenuePerCustomer[index],
+          yourPercent: yourPercent[index],
+          quickModelingPercentage: quickModelingPercentage[index],
+          revenue1: revenue1[index],
+          customers1: customers1[index],
+          revenue2: revenue2[index],
+          customers2: customers2[index]
+      
+      };
+      if (isRowValid(segmentData)) {
+        return  `<tr>
+              <td>${segment}</td>
+              <td>$${avgRevenuePerCustomer[index]}</td>
+              <td>${quickModelingPercentage[index]}%</td>
+              <td>$${revenue1[index].toLocaleString()}</td>
+              <td>${customers1[index]}</td>
+              <td>${yourPercent[index]}%</td>
+              <td>$${revenue2[index].toLocaleString()}</td>
+              <td>${customers2[index]}</td>
+          </tr>`
+        }
+        return ''; // Return empty string for invalid rows
+    }).join("");
+      return `
+          <table>
+              <thead>
+                  <tr>
+                      <th>Segment Name</th>
+                      <th>Avg Revenue/Customer</th>
+                      <th>Quick Modeling %</th>
+                      <th>Revenue </th>
+                      <th>Customers </th>
+                      <th>Your %</th>
+                      <th>Revenue </th>
+                      <th>Customers </th>
+                  </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+          </table>
+      `;
+  };
+
+  return `
+      <h1>Reverse Engineer Valuation Calculation Results</h1>
+      <table>
+          <tr><td>Last Year's Total Revenue:</td><td>$${lastYearsRevenue.toLocaleString()}</td></tr>
+          <tr><td>Amount Needed:</td><td>$${amountNeeded.toLocaleString()}</td></tr>
+          <tr><td>Multiplier Expected:</td><td>${multiplierExpected}X</td></tr>
+          <tr><td>Equity Percentage:</td><td>${equityPercentage}%</td></tr>
+          <tr><td>Revenue Multiplier at Exit:</td><td>${revenueMultiplierExit}</td></tr>
+          <tr><td>Company Worth at Year 3:</td><td>$${companyWorthAtYear3.toLocaleString()}</td></tr>
+          <tr><td>Revenue Needed by Year 3:</td><td>$${revenueNeededYear3.toLocaleString()}</td></tr>
+          <tr><td>Growth Projection:</td><td>${growthProjection}%</td></tr>
+          <tr><td>Effective Interest for 3 Years:</td><td>${formatPercentage(effectiveInterest3Years)}</td></tr>
+          <tr><td>Effective Interest for 5 Years:</td><td>${formatPercentage(effectiveInterest5Years)}</td></tr>
+          <tr><td>Effective Interest for 7 Years:</td><td>${formatPercentage(effectiveInterest7Years)}</td></tr>
+          <tr><td>Total Market Size:</td><td>$${totalMarket.toLocaleString()}</td></tr>
+          <tr><td>Market Capture at Year 5:</td><td>${capturedAtYear5.toFixed(2)}%</td></tr>
+      </table>
+      <h2>Revenue Data by Year</h2>
+      ${createRevenueDataTable()}
+      <h2>Customer Segments Details at Year 1</h2>
+      ${createSegmentDataTable(segmentNames, avgRevenuePerCustomer, yourPercent, quickModelingPercentage, revenue1, customers1, revenue2, customers2Year1)}
+      <h2>Customer Segments Details at Year 2</h2>
+      ${createSegmentDataTable(segmentNamesYear2, avgRevenuePerCustomerYear2, yourPercentYear2, quickModelingPercentageYear2, revenue1Year2, customers1Year2, revenue2Year2, customers2Year2)}
+      <h2>Customer Segments Details at Year 3</h2>
+      ${createSegmentDataTable(segmentNamesYear3, avgRevenuePerCustomerYear3, yourPercentYear3, quickModelingPercentageYear3, revenue1Year3, customers1Year3, revenue2Year3, customers2Year3)}
+  `;
+}
+
+
+
+
+
 
 
   return (
@@ -747,10 +929,11 @@ const handleSave = async () => {
               </td>
               <td>${revenue2[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</td>
               <td> <input
-              type="integer" 
-              value={customers2[index]}
-              onChange={(e) => setCustomers2(index, e.target.value)}
-              /></td>
+              type="number"
+              value={customers2Year1[index]}
+              onChange={(e) => handleCustomers2Year1Change(index, e.target.value)}
+              />
+              </td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear1} disabled={visibleRowsYear1 >= 5}>
@@ -808,11 +991,13 @@ const handleSave = async () => {
                 />
               </td>
               <td>{`$${revenue2Year2[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
-              <td><input
-              type="integer" 
+              <td> 
+              <input
+              type="number"
               value={customers2Year2[index]}
-              onChange={(e) => setCustomers2Year2(index, e.target.value)}
-              /></td>
+              onChange={(e) => handleCustomers2Year2Change(index, e.target.value)}
+              />
+              </td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear2} disabled={visibleColumnsYear2 >= 5}>
@@ -869,11 +1054,12 @@ const handleSave = async () => {
                 />
               </td>
               <td>{`$${revenue2Year3[index].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}</td>
-              <td><input
-              type="integer" 
+              <td> <input
+              type="number"
               value={customers2Year3[index]}
-              onChange={(e) => setCustomers2Year3(index, e.target.value)}
-              /></td>
+              onChange={(e) => handleCustomers2Year3Change(index, e.target.value)}
+              />
+              </td>
             </tr>
           ))}
           <button className="no-print" onClick={addRowYear3} disabled={visibleColumnsYear3 >= 5}>
@@ -881,7 +1067,7 @@ const handleSave = async () => {
           </button>
         </tbody>
       </table>
-      <button className="SaveButton no-print" onClick={handleSave}>Submit</button><button className="no-print" onClick={downloadPdfDocument}>Download as PDF</button>
+      <button className="SaveButton no-print" onClick={handleOpenNewWindow}>Submit</button>
 
     
       </div>
