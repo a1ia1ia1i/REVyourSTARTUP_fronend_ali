@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import _ from 'lodash';
+import _, { initial } from 'lodash';
 import './Year1.css';
+import { year1 } from './api'
+
 import Dashboard from './Dashboard';
 // Example data structure
 
@@ -15,7 +17,7 @@ price: 85}];
 
 function Year1({ setLoggedIn }) {
   const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));
-      
+  const mainFormId = useState(0);
   const [customerSegments, setCustomerSegments] = useState([]);
   const [additionalRevenue, setAdditionalRevenue] = useState({
     sourceNames: Array.from({ length: 5 }, () => ' '),
@@ -33,24 +35,104 @@ function Year1({ setLoggedIn }) {
   const [totalExpenses, setTotalExpenses] = useState(_.cloneDeep(initialMonthlyData));
   const [foundersDraw, setFoundersDraw] = useState([]);
   const [returnReworks, setReturnReworks] = useState([]);
-  const [marketingExpenses, setMarketingExpenses] = useState([]);
+  const newMarketingExpensesNames = ["Brand-Related Expenses", "Owned Media (blogs…etc)", "Public Relations", "Content Creation", "Marketing Analytics", "Marketing Research", "Conferences", "Trade Shows", "Marketing Training", "Sales Support Tools", "Website Expenses", "Mobile Platform Expenses", "Social Media Marketing", "Affiliate Marketing", "Traditional Media"];
+  const [marketingExpenses, setMarketingExpenses] = useState({
+    expensesList: newMarketingExpensesNames.map((name) => ({
+    sourceName: name,
+    monthlyData: _.cloneDeep(initialMonthlyData)
+  })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
   const [fixedAssets, setFixedAssets] = useState([]);
-  const [propertyRelated, setPropertyRelated] = useState([]);
-  const [legalAndProfessionalServices, setLegalAndProfessionalServices] = useState([]);
-  const [officeGeneralBusiness, setOfficeGeneralBusiness] = useState([]);
-  const [bankingFees, setBankingFees] = useState([]);
-  const [travelVehicleRelated, setTravelVehicleRelated] = useState([]);
+  const propertyRelatedNames = ["Interest (Mortgage)", "Rent of Lease (business property)", "Rent or lease (vehicles, machinery, and equipment", "Repairs and maintenance", "Depletion", "Other"];
+  const [propertyRelated, setPropertyRelated] = useState({
+    expensesList: propertyRelatedNames.map((name) => ({
+      sourceName: name,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
+  const serviceNames = ["Lawyer", "Accounting", "Bookkeeping", "Insurance", "Other"];
+  const [legalAndProfessionalServices, setLegalAndProfessionalServices] = useState({
+    expensesList: serviceNames.map((name) => ({
+      sourceName: name,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
+  const officeExpensesNames = ["Phone", "Internet", "Utilities", "Office supplies", "Misc. Office Equipment", "Cleaning Service", "Taxes and Licenses"];
+  const [officeGeneralBusiness, setOfficeGeneralBusiness] = useState({
+    expensesList: officeExpensesNames.map((name) => ({
+      sourceName: name,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
+  const bankingFeesNames = ["Interest (Banks/Credit)", "Interest (Other)"];
+  const [bankingFees, setBankingFees] = useState({
+    expensesList: bankingFeesNames.map((name) => ({
+      sourceName: name,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
+  const travelExpensesNames = ["Car and Truck expenses", "Travel/Expenses", "Deductible Meals", "Mileage", "Parking/Tools", "Other"];
+  const [travelVehicleRelated, setTravelVehicleRelated] = useState({
+    expensesList: travelExpensesNames.map((name) => ({
+      sourceName: name,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
   const [productionRelated, setProductionRelated] = useState([]);
-  const [otherExpenses, setOtherExpenses] = useState([]);
-  const [salariedWorkers, setSalariedWorkers] = useState([]);
-  const [fullTimeWorkers, setFullTimeWorkers] = useState([]);
-  const [partTimeWorkers, setPartTimeWorkers] = useState([]);
-  const [workersHeadCount, setWorkersHeadCount] = useState([]);
+  const [otherExpenses, setOtherExpenses] = useState({
+    expensesList: Array.from({ length: 5 }, () => ({
+      sourceName: "Misc.",
+      monthlyData: _.cloneDeep(initialMonthlyData)
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData),
+  });
+  const [salariedWorkers, setSalariedWorkers] = useState({
+    workersList: Array.from({ length: 6 }, () => ({
+      description: "Misc.",
+      monthlySalary: 0,
+      monthlyData: _.cloneDeep(initialMonthlyData)
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData),
+  });
+  const [fullTimeWorkers, setFullTimeWorkers] = useState({
+    workersList: Array.from({ length: 6 }, () => ({
+      description: "Misc.",
+      monthlySalary: 0,
+      monthlyData: _.cloneDeep(initialMonthlyData)
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData),
+  });
+  const [partTimeWorkers, setPartTimeWorkers] = useState({
+    workersList: Array.from({ length: 6 }, () => ({
+      description: "Misc.",
+      monthlySalary: 0,
+      monthlyData: _.cloneDeep(initialMonthlyData)
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData),
+  });
+  const [workersHeadCount, setWorkersHeadCount] = useState({
+    foundersHeadCount: _.cloneDeep(initialMonthlyData),
+    salariedHeadCount: _.cloneDeep(initialMonthlyData),
+    fullTimeHeadCount: _.cloneDeep(initialMonthlyData),
+    partTimeHeadCount: _.cloneDeep(initialMonthlyData),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
   const [selectedValue, setSelectedValue] = useState("option1")
-  const [payRollTaxesAndBenefits, setpayRollTaxesAndBenefits] = useState([]);
-
-
-
+  const taxesAndBenefitsNames = ["Social Security (Rate)", "Social Security (Base)", "Medicare", "Federal Unemployment Tax (FUTA)", "Federal Unemployment Tax (Base)", "State Unemployment Tax (SUTA)", "State Unemployment Tax (Base)", "Employee Pension Programs", "Worker's Compensation", "Employee Health Insurace", "Other Employee Benefit Programs"];
+  const [payRollTaxesAndBenefits, setpayRollTaxesAndBenefits] = useState({
+    payrollList: taxesAndBenefitsNames.map((name) => ({
+      sourceName: name,
+      value: 0,
+      monthlyData: _.cloneDeep(initialMonthlyData),
+    })),
+    totalMonthly: _.cloneDeep(initialMonthlyData)
+  });
   const currentDate = new Date();
 
   const currentYear = currentDate.getFullYear();
@@ -102,10 +184,13 @@ function Year1({ setLoggedIn }) {
       const newReturnReworks = objectListTest.map((item) => ({
         name: item.name,
         percentOfRevenue: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-
+        monthlyData: _.cloneDeep(initialMonthlyData)
       }));
-      setReturnReworks(newReturnReworks);
+      const newReturnReworksWithTotal = newReturnReworks.map((item) => ({
+        ...item,
+        totalMonthly: _.cloneDeep(initialMonthlyData)
+      }));
+      setReturnReworks(newReturnReworksWithTotal);
 
       const materialExpensesNames = ["Overall Material/Supplies", "Overall Contract Labor", "Material/Supplies", "Contract Labor", "Packaging", "Shipping"]
       const newProductionRelated = objectListTest.map((item) => ({
@@ -115,12 +200,17 @@ function Year1({ setLoggedIn }) {
           monthlyData: _.cloneDeep(initialMonthlyData),
         }))
       }));
-      setProductionRelated(newProductionRelated);
+      const newProductionRelatedWithTotal = newProductionRelated.map((item) => ({
+        ...item,
+        totalMonthly: _.cloneDeep(initialMonthlyData)
+      }));
+      setProductionRelated(newProductionRelatedWithTotal);
 
     }
 
     const newDistributions = {
       includeInvestments: true,
+      percentOfIncomeDistributed: 0,
       withInvestments: _.cloneDeep(initialMonthlyData), // Deep copy of initialMonthlyData
       withoutInvestments: _.cloneDeep(initialMonthlyData) // Another deep copy of initialMonthlyData
     };
@@ -136,36 +226,10 @@ function Year1({ setLoggedIn }) {
 
     const newFoundersDraw = {
       numberOfFounders: 1,
+      foundersShare: 1,
       foundersDrawPayArray: Array.from({length: 1}, () => _.cloneDeep(initialMonthlyData)) 
     }
     setFoundersDraw(newFoundersDraw);
-
-    const newMarketingExpensesNames = [
-      "Brand-Related Expenses",
-      "Owned Media (blogs…etc)",
-      "Public Relations",
-      "Content Creation",
-      "Marketing Analytics",
-      "Marketing Research",
-      "Conferences",
-      "Trade Shows",
-      "Marketing Training",
-      "Sales Support Tools",
-      "Website Expenses",
-      "Mobile Platform Expenses",
-      "Social Media Marketing",
-      "Affiliate Marketing",
-      "Traditional Media"
-    ];
-    const newMarketingExpenses = {
-      numberOfExpenses: 15,
-      marketingList: newMarketingExpensesNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setMarketingExpenses(newMarketingExpenses);
 
     const newFixedAssets = {
       newAcquisitions:  _.cloneDeep(initialMonthlyData),
@@ -173,130 +237,157 @@ function Year1({ setLoggedIn }) {
       totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setFixedAssets(newFixedAssets);
-    const propertyRelatedNames = ["Interest (Mortgage)", "Rent of Lease (business property)", "Rent or lease (vehicles, machinery, and equipment", "Repairs and maintenance", "Depletion", "Other"];
-    const newPropertyRelated = {
-      expensesList: propertyRelatedNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setPropertyRelated(newPropertyRelated);
-
-    const serviceNames = ["Lawyer", "Accounting", "Bookkeeping", "Insurance", "Other"];
-
-    const newLegalAndProfessional = {
-      expensesList: serviceNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setLegalAndProfessionalServices(newLegalAndProfessional);
     
-    const officeExpensesNames = ["Phone", "Internet", "Utilities", "Office supplies", "Misc. Office Equipment", "Cleaning Service", "Taxes and Licenses"];
-    const newOfficeBusiness = {
-      expensesList: officeExpensesNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setOfficeGeneralBusiness(newOfficeBusiness);
-
-    const bankingFeesNames = ["Interest (Banks/Credit)", "Interest (Other)"];
-    const newBankingFees = {
-      expensesList: bankingFeesNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setBankingFees(newBankingFees);
-
-    const travelExpensesNames = ["Car and Truck expenses", "Travel/Expenses", "Deductible Meals", "Mileage", "Parking/Tools", "Other"];
-    const newTravelExpenses = {
-      expensesList: travelExpensesNames.map((name) => ({
-        sourceName: name,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setTravelVehicleRelated(newTravelExpenses);
-
-    const newOtherExpenses = {
-      expensesList: Array.from({ length: 5 }, () => ({
-        sourceName: "Misc.",
-        monthlyData: _.cloneDeep(initialMonthlyData)
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData),
-    };
-    setOtherExpenses(newOtherExpenses);
-
-    const newSalariedWorkers = {
-      workersList: Array.from({ length: 6 }, () => ({
-        description: "Misc.",
-        monthlySalary: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData)
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData),
-    };
-    setSalariedWorkers(newSalariedWorkers);
-
-    const newFullTime = {
-      workersList: Array.from({ length: 6 }, () => ({
-        description: "Misc.",
-        monthlySalary: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData)
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData),
-    };
-    setFullTimeWorkers(newFullTime);
-
-    const newPartTime = {
-      workersList: Array.from({ length: 6 }, () => ({
-        description: "Misc.",
-        monthlySalary: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData)
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData),
-    };
-    setPartTimeWorkers(newPartTime);
-
-    
-    const newHeadCount = {
-      foundersHeadCount: _.cloneDeep(initialMonthlyData),
-      salariedHeadCount: _.cloneDeep(initialMonthlyData),
-      fullTimeHeadCount: _.cloneDeep(initialMonthlyData),
-      partTimeHeadCount: _.cloneDeep(initialMonthlyData),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setWorkersHeadCount(newHeadCount);
-    const taxesAndBenefitsNames = ["Social Security (Rate)", "Social Security (Base)", "Medicare", "Federal Unemployment Tax (FUTA)", "Federal Unemployment Tax (Base)", "State Unemployment Tax (SUTA)", "State Unemployment Tax (Base)", "Employee Pension Programs", "Worker's Compensation", "Employee Health Insurace", "Other Employee Benefit Programs"];
-    const newPayRoll = {
-      payrollList: taxesAndBenefitsNames.map((name) => ({
-        sourceName: name,
-        value: 0,
-        monthlyData: _.cloneDeep(initialMonthlyData),
-      })),
-      totalMonthly: _.cloneDeep(initialMonthlyData)
-    }
-    setpayRollTaxesAndBenefits(newPayRoll);
-
-
   }, []); // Execute effect whenever objectList prop changes
-  const handleSubmit = (e) => {
+  const handleYesInclude = () => {
+    const copy = _.cloneDeep(Distributions);
+    copy.includeInvestments = true;
+    setDistributions(copy);
+  }
+  const handleNoInclude = () => {
+    const copy = _.cloneDeep(Distributions);
+    copy.includeInvestments = false;
+    setDistributions(copy);
+  }
+  const handleYesExclude = () => {
+    const copy = _.cloneDeep(cashOnHand);
+    copy.excludeDepreciation = true;
+    setCashOnHand(copy);
+  }
+  const handleNoExclude = () => {
+    const copy = _.cloneDeep(cashOnHand);
+    copy.excludeDepreciation = false;
+    setCashOnHand(copy);
+    
+
+  }
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(customerSegments);
-    // Handle form submission, e.g., send to an API
+  
+    // Clone the necessary data structures deeply
+    console.log("End1");
+    const finalTotalAllExpenses = _.cloneDeep(totalExpenses);
+    const finalDistributions = _.cloneDeep(Distributions);
+    const finalCashOnHand = _.cloneDeep(cashOnHand);
+  
+    // Helper function to calculate distribution amounts
+    const calculateDistribution = (incomeAmount, reduction = 0) => {
+      return (incomeAmount - reduction) * finalDistributions.percentOfIncomeDistributed;
+    };
+  
+    // Update distribution amounts based on whether investments are included
+    finalDistributions.withInvestments.forEach((month, index) => {
+      month.amount = calculateDistribution(totalAllIncome[index].amount);
+    });
+    finalDistributions.withoutInvestments.forEach((month, index) => {
+      month.amount = calculateDistribution(totalAllIncome[index].amount, fundingInvestment.totalMonthly[index].amount);
+    });
+    console.log("End2");
+
+    // Helper function to update cash on hand
+    const updateCashOnHand = (includeDepreciation) => {
+      finalCashOnHand[includeDepreciation ? 'withDepreciation' : 'withoutDepreciation'].forEach((month, index) => {
+        const previousAmount = index === 0 ? finalCashOnHand.initialCashOnHand : finalCashOnHand[includeDepreciation ? 'withDepreciation' : 'withoutDepreciation'][index-1].amount;
+        const depreciation = includeDepreciation ? fixedAssets.depreciation[index].amount : 0;
+        const distribution = finalDistributions[finalDistributions.includeInvestments ? 'withInvestments' : 'withoutInvestments'][index].amount;
+        month.amount = previousAmount + totalAllIncome[index].amount - distribution - totalExpenses[index].amount - depreciation;
+      });
+    };
+  
+    // Calculate cash on hand for both scenarios
+    updateCashOnHand(true); // with depreciation
+    updateCashOnHand(false); // without depreciation
+  
+    // Clone and calculate totals for founders draw and production-related expenses
+    const newFoundersDraw = _.cloneDeep(foundersDraw);
+    console.log("End3");
+
+    const productionRelatedPerMonth = new Array(initialMonthlyData.length).fill(0);
+    _.cloneDeep(productionRelated).forEach(item => {
+      item.totalMonthly.forEach((value, index) => {
+        productionRelatedPerMonth[index] += value;
+      });
+    });
+    const returnReworksEachMonth = returnReworks.reduce((acc, item) => {
+      item.totalMonthly.forEach((amount, index) => {
+        if (acc[index] === undefined) {
+          acc[index] = 0; // Initialize if not already set
+        }
+        acc[index] += amount; // Add the amount at this index
+      });
+      return acc;
+    }, []);
+    
+    console.log("End4");
+    // Calculate and update total expenses per month
+    finalTotalAllExpenses.forEach((month, index) => {
+      month.amount = newFoundersDraw.foundersDrawPayArray[0][index].amount
+        + marketingExpenses.totalMonthly[index].amount
+        + returnReworksEachMonth[index]
+        
+        + fixedAssets.totalMonthly[index].amount
+        + propertyRelated.totalMonthly[index].amount
+        + legalAndProfessionalServices.totalMonthly[index].amount
+        + officeGeneralBusiness.totalMonthly[index].amount
+        + bankingFees.totalMonthly[index].amount
+        
+        + travelVehicleRelated.totalMonthly[index].amount
+        + productionRelatedPerMonth[index]
+        + otherExpenses.totalMonthly[index].amount
+        + salariedWorkers.totalMonthly[index].amount
+        
+        + fullTimeWorkers.totalMonthly[index].amount
+        + partTimeWorkers.totalMonthly[index].amount
+        + payRollTaxesAndBenefits.totalMonthly[index].amount;
+        
+      });
+
+      
+    console.log("End5");
+    // Log the final states for debugging
+    console.log('Final Cash on Hand:', finalCashOnHand);
+    console.log('Final Distributions:', finalDistributions);
+    console.log('Final Total All Expenses:', finalTotalAllExpenses);
+    const userData = {
+      year1: {
+        customerSegments: _.cloneDeep(customerSegments),
+        additionalRevenue: _.cloneDeep(additionalRevenue),
+        fundingInvestment: _.cloneDeep(fundingInvestment),
+        totalAllIncome: [...totalAllIncome],
+        distributions: _.cloneDeep(finalDistributions),
+        cashOnHand: _.cloneDeep(finalCashOnHand),
+        totalExpenses: [...finalTotalAllExpenses],
+        foundersDraw: _.cloneDeep(foundersDraw),
+        returnReworks: _.cloneDeep(returnReworks),
+        marketingExpenses: _.cloneDeep(marketingExpenses),
+        fixedAssets: _.cloneDeep(fixedAssets),
+        propertyRelated: _.cloneDeep(propertyRelated),
+        legalAndProfessionalServices: _.cloneDeep(legalAndProfessionalServices),
+        officeGeneralBusiness: _.cloneDeep(officeGeneralBusiness),
+        bankingFees: _.cloneDeep(bankingFees),
+        travelVehicleRelated: _.cloneDeep(travelVehicleRelated),
+        productionRelated: _.cloneDeep(productionRelated),
+        otherExpenses: _.cloneDeep(otherExpenses),
+        salariedWorkers: _.cloneDeep(salariedWorkers),
+        fullTimeWorkers: _.cloneDeep(fullTimeWorkers),
+        partTimeWorkers: _.cloneDeep(partTimeWorkers),
+        workersHeadCount: _.cloneDeep(workersHeadCount),
+        payRollTaxesAndBenefits: _.cloneDeep(payRollTaxesAndBenefits)
+      }
+           
+    }
+    
+    try {
+      console.log(userData);
+      const response = await year1(mainFormId, userData);
+
+    }
+    catch (error) {
+      console.error("Failted to submit form", error);
+    }
   };
 
-  const handleChange = (index, field, value) => {
-    const updatedSegments = _.cloneDeep(customerSegments);
-    updatedSegments[index].inputData[field] = +value;
-    
-    setCustomerSegments(updatedSegments);
-  };
+  
   const sumArray = (arr1, arr2) => {
     const result = [];
     for (let i = 0; i < arr1.length; i++) {
@@ -306,14 +397,59 @@ function Year1({ setLoggedIn }) {
   };
   useEffect(() => {
     const newTotalMonthly = sumArray(additionalRevenue.totalMonthly, fundingInvestment.totalMonthly);
-    setTotalIncome(newTotalMonthly);
-  }, [fundingInvestment, additionalRevenue]);
-  const handleChangeMonthlyData = (index, indexM, field, value) => {
+    let totalMonthly = [...newTotalMonthly]; // Initialize with newTotalMonthly
+
+    customerSegments.forEach(item => {
+      totalMonthly = sumArray(totalMonthly, item.totalMonthlyData); // Accumulate the total monthly data
+    });
+
+    setTotalIncome(totalMonthly);
+    
+    
+
+  }, [fundingInvestment, additionalRevenue, customerSegments]);
+  
+  const handleChange = (index, field, value) => {
     const updatedSegments = _.cloneDeep(customerSegments);
-    const previousNumbersSold = updatedSegments[index].monthlyData.map(month => month.NumbersSold);  // Capture previous numbers sold for all months
+    updatedSegments[index].inputData[field] = +value;
+    updatedSegments[index].monthlyData.forEach(month => month.ExtraFromPreviousMonths = 0);
+    
+    // Loop through each month to recalculate based on the current numbers sold
+    updatedSegments[index].monthlyData.forEach((monthData, currentMonth) => {
+      const numbersSold = monthData.NumbersSold;
+      const { deposit, deliveredIn, extraMonths, commission, fixedFees } = updatedSegments[index].inputData;
+      const depositPercent = deposit / 100;
+      const itemPrice = updatedSegments[index].price;
+      const depositAmount = Math.ceil(itemPrice * depositPercent);
+      const commissionPercentage = commission/100;
+      monthData.Deposit = depositAmount * numbersSold;
   
+      const amountDue = (itemPrice * numbersSold) - (depositAmount * numbersSold);
+      const amountPerMonth = amountDue / (extraMonths + 1);
+      const startingMonth = currentMonth + deliveredIn;
+      if ((startingMonth)<34) {
+        updatedSegments[index].monthlyData[startingMonth].Original = Math.ceil(amountPerMonth);
+      }
+      // Apply the calculated changes to all relevant future months
+      for (let i = startingMonth+1; i < updatedSegments[index].monthlyData.length && i <= startingMonth + extraMonths; i++) {
+        updatedSegments[index].monthlyData[i].ExtraFromPreviousMonths += Math.ceil(amountPerMonth);
+      }
+      monthData.commission = ((monthData.Deposit+monthData.Original+monthData.ExtraFromPreviousMonths)*commissionPercentage);
+      monthData.fixedFees = (fixedFees*numbersSold);
+    });
+  
+    // Recalculate the total for each month
+    updatedSegments[index].totalMonthlyData = updatedSegments[index].monthlyData.map((data) => {
+      const totalAmount = (data.Original + data.ExtraFromPreviousMonths + data.Deposit) - (data.commission + data.fixedFees);
+      return { amount: totalAmount };
+    });
+  
+    // Update the main state with the new customerSegments array
+    setCustomerSegments(updatedSegments);
+  };
+  const handleChangeMonthlyData = (index, indexM, field, value) => {
+    const updatedSegments = _.cloneDeep(customerSegments);  
     updatedSegments[index].monthlyData[indexM].NumbersSold = +value;  // Directly update the numbers sold for the selected month
-  
     // Reset ExtraFromPreviousMonths to 0 for recalculation
     updatedSegments[index].monthlyData.forEach(month => month.ExtraFromPreviousMonths = 0);
     // Calculate the total numbers sold after the update
@@ -420,8 +556,34 @@ function Year1({ setLoggedIn }) {
     }
   };
   
+  const addNewExpense = (stateName) => {
+    const newExpense = { sourceName: 'Other', monthlyData: _.cloneDeep(initialMonthlyData) };
+    // Assuming setMarketingExpenses is a useState setter function
+    if (stateName === "MarketingExpenses") {
+      setMarketingExpenses(prev => ({
+        ...prev,
+        expensesList: [...prev.expensesList, newExpense],
+        totalMonthly: prev.totalMonthly.map(total => ({
+          ...total,
+          amount: total.amount // No change needed, just 0 added
+        }))
+      }));
+    }
+  };
+  const handleReworksChange = (index, value) => {
+    const newValue = +value;
+    const newReworks = _.cloneDeep(returnReworks);
+    newReworks[index].percentOfRevenue = newValue;
+    const result = [];
+    for (let i = 0; i < 12; i++) {
+      let newAmount = (newReworks[index].monthlyData[i].amount + totalAllIncome[i].amount)*(newValue/100);
+      result.push({ amount: newAmount });
+    }
+    newReworks[index].monthlyData = [...result];
 
-
+    
+    setReturnReworks(newReworks);
+  };
 const addNewSource = (stateName) => {
   // Define a helper function to update the state
   const updateState = (setterFunction, newStateName) => {
@@ -452,6 +614,7 @@ const addNewSource = (stateName) => {
     updateState(setFundingInv, "funding_investment");
   }
 };
+
   return (
     <div className="year1">
       <Dashboard setLoggedIn={setLoggedIn}/>
@@ -464,7 +627,7 @@ const addNewSource = (stateName) => {
               <tr>
                 <th>Product/Service</th>
                 <th>Status: {item.numberToSell}</th>
-                {months.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+                {months.map(month => <th className="monthHeader" key={`${month}-${index}`}>{month}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -496,7 +659,7 @@ const addNewSource = (stateName) => {
                   </table>
                 </td>
                 {months.map((month, indexM) => (
-                  <td rowSpan={6} key={month} className="td-month">
+                  <td rowSpan={6} key={`month-${month}-${index}`} className="td-month">
                     <table className="month-table">
                       <thead></thead>
                         <tbody>
@@ -521,7 +684,7 @@ const addNewSource = (stateName) => {
           <thead>
             <tr>
               <th>Source Names</th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map(month => <th className="monthHeader" key={`month-${month}`}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -615,7 +778,7 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             <tr>
-              <td><button>Yes</button><button>No</button></td>
+              <td><button onClick={() => handleYesInclude()}>Yes</button><button onClick={() => handleNoInclude()}>No</button></td>
               {Distributions.includeInvestments ? 
                 (Array.isArray(Distributions.withInvestments) && Distributions.withInvestments.length > 0 ?
                 Distributions.withInvestments.map(month => (
@@ -638,12 +801,14 @@ const addNewSource = (stateName) => {
           <thead>
             <tr>
               <th>Exclude Depreciation</th>
+              <th>Startup Capital</th>
               {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><button>Yes</button><button>No</button></td>
+              <td><button onClick={() => handleYesExclude()}>Yes</button><button onClick={() => handleNoExclude()}>No</button></td>
+              <td>{cashOnHand.initialCashOnHand}</td>
               {cashOnHand.excludeDepreciation ? 
                 (Array.isArray(cashOnHand.withoutDepreciation) && cashOnHand.withoutDepreciation.length > 0 ?
                 cashOnHand.withoutDepreciation.map(month => (
@@ -709,7 +874,7 @@ const addNewSource = (stateName) => {
           {returnReworks && returnReworks.map((source, index) => (
             <tr key={index}>
               <td>{source.name}</td>
-              <td><input type="number"></input></td>
+              <td><input type="number" value={source.percentOfRevenue} onChange={e => handleReworksChange(index, e.target.value)}></input></td>
               {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
                 <td key={indexM}>{month.amount}</td>
               ))}
@@ -728,16 +893,17 @@ const addNewSource = (stateName) => {
             </tr>
           </thead>
           <tbody>
-          {marketingExpenses.marketingList && marketingExpenses.marketingList.map((source, index) => (
+          {marketingExpenses.expensesList && marketingExpenses.expensesList.map((source, index) => (
             <tr key={index}>
               <td>{source.sourceName}</td>
                 {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
-              <td key={indexM}>$<input type="number"></input></td>
+              <td key={indexM}>$<input type="number" value={month}></input></td>
               ))}
             </tr>
           ))}
           </tbody>
         </table> 
+        <button onClick={() => addNewExpense("MarketingExpenses")}>+</button>
 
         <h2>Fixed Assets</h2>
         <table class="tableizer-table2">
@@ -772,7 +938,7 @@ const addNewSource = (stateName) => {
           <tbody>
             {propertyRelated.expensesList && propertyRelated.expensesList.map(expense => <tr key={expense}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -792,7 +958,7 @@ const addNewSource = (stateName) => {
           <tbody>
             {legalAndProfessionalServices.expensesList && legalAndProfessionalServices.expensesList.map(expense => <tr key={expense}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -812,7 +978,7 @@ const addNewSource = (stateName) => {
           <tbody>
             {officeGeneralBusiness.expensesList && officeGeneralBusiness.expensesList.map(expense => <tr key={expense}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -832,7 +998,7 @@ const addNewSource = (stateName) => {
           <tbody>
             {bankingFees.expensesList && bankingFees.expensesList.map(expense => <tr key={expense}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -852,7 +1018,7 @@ const addNewSource = (stateName) => {
           <tbody>
             {travelVehicleRelated.expensesList && travelVehicleRelated.expensesList.map(expense => <tr key={expense}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -882,7 +1048,7 @@ const addNewSource = (stateName) => {
                     {item.expensesList && item.expensesList.map(expense => 
                     <tr key={expense}>
                       <td>{expense.sourceName}</td>
-                      {expense.monthlyData && expense.monthlyData.map(month => <td><input type="number"></input></td>)}
+                      {expense.monthlyData && expense.monthlyData.map(month => <td><input type="number" value={month}></input></td>)}
                     </tr>)}
                   </tbody>
                 </table>                
@@ -901,8 +1067,8 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             {otherExpenses.expensesList && otherExpenses.expensesList.map(expense => <tr key={expense}>
-              <td><input type="string"></input></td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              <td><input type="string" value={expense.sourceName}></input></td>
+              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               <td>Total</td>
@@ -923,9 +1089,9 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             {salariedWorkers.workersList && salariedWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string"></input></td>
-              <td><input type="number"></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              <td><input type="string" value={workers.description}></input></td>
+              <td><input type="number" value={workers.monthlySalary}></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               
@@ -946,9 +1112,9 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             {fullTimeWorkers.workersList && fullTimeWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string"></input></td>
-              <td><input type="number"></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              <td><input type="string" value={workers.description}></input></td>
+              <td><input type="number" value={workers.monthlySalary}></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               
@@ -969,9 +1135,9 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             {partTimeWorkers.workersList && partTimeWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string"></input></td>
-              <td><input type="number"></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number"></input></td>)}
+              <td><input type="string" value={workers.description}></input></td>
+              <td><input type="number" value={workers.monthlySalary}></input></td>
+              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
             </tr>)}
             <tr>
               
@@ -1034,7 +1200,7 @@ const addNewSource = (stateName) => {
             {payRollTaxesAndBenefits.payrollList && payRollTaxesAndBenefits.payrollList.map(row_item => 
             <tr key={row_item}>
               <td>{row_item.sourceName}</td>
-              <td><input type="number"></input></td>
+              <td><input type="number" value={row_item.value}></input></td>
               {row_item.monthlyData && row_item.monthlyData.map(month => <td key={month}>{month.amount}</td>)}
             </tr>)}
             <tr>
