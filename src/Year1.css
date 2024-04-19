@@ -119,3 +119,6 @@ table.tableizer-table2 td {
 	background-color: #104E8B;
 	color: white;
 }
+.blackTD {
+	background-color: black;
+}

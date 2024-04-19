@@ -1,13 +1,15 @@
 import './styling/registration.css'
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { login } from '../api'
-export default function LoginForm({ isLoggedIn }) {
+import { AuthContext } from '../contexts/authcontext';
+
+export default function LoginForm() {
 
 // States for login
 const [name, setName] = useState('');
 const [password, setPassword] = useState('');
-
+const { handleLogin } = useContext(AuthContext);
 // States for checking the errors
 const [submitted, setSubmitted] = useState(false);
 const [error, setError] = useState(false);
@@ -37,7 +39,8 @@ setError(true);
         if (response.status === 202) {
             setSubmitted(true);
             setError(false);
-            isLoggedIn(true);
+            
+            handleLogin(response.userID);
         }
     } catch (error) {
         setAuthError('Unable to authenticate user');

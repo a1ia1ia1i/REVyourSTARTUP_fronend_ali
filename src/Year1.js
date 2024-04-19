@@ -125,7 +125,7 @@ function Year1({ setLoggedIn }) {
   });
   const [selectedValue, setSelectedValue] = useState("option1")
   const taxesAndBenefitsNames = ["Social Security (Rate)", "Social Security (Base)", "Medicare", "Federal Unemployment Tax (FUTA)", "Federal Unemployment Tax (Base)", "State Unemployment Tax (SUTA)", "State Unemployment Tax (Base)", "Employee Pension Programs", "Worker's Compensation", "Employee Health Insurace", "Other Employee Benefit Programs"];
-  const [payRollTaxesAndBenefits, setpayRollTaxesAndBenefits] = useState({
+  const [payRollTaxesAndBenefits, setPayRollTaxesAndBenefits] = useState({
     payrollList: taxesAndBenefitsNames.map((name) => ({
       sourceName: name,
       value: 0,
@@ -227,7 +227,8 @@ function Year1({ setLoggedIn }) {
     const newFoundersDraw = {
       numberOfFounders: 1,
       foundersShare: 1,
-      foundersDrawPayArray: Array.from({length: 1}, () => _.cloneDeep(initialMonthlyData)) 
+      foundersDrawPayArray: Array.from({length: 1}, () => _.cloneDeep(initialMonthlyData)),
+      totalMonthly: _.cloneDeep(initialMonthlyData)
     }
     setFoundersDraw(newFoundersDraw);
 
@@ -258,14 +259,612 @@ function Year1({ setLoggedIn }) {
     const copy = _.cloneDeep(cashOnHand);
     copy.excludeDepreciation = false;
     setCashOnHand(copy);
-    
-
   }
+  const handlePayrollValueChange = (index, event) => {
+    const newValue = parseFloat(event.target.value) || 0;  // Default to 0 if invalid input
+
+    setPayRollTaxesAndBenefits(prevState => ({
+        ...prevState,
+        payrollList: prevState.payrollList.map((item, idx) => {
+            if (idx === index) {
+                return { ...item, value: newValue };
+            }
+            return item;
+        })
+    }));
+  };
+  const calculatePayrollMonthlyData = () => {
+    setPayRollTaxesAndBenefits(prevState => {
+        const newPayrollList = [...prevState.payrollList];
+        const medicareRate = findPayrollItemRate(newPayrollList, "Medicare");
+        const socialSecurityRate = findPayrollItemRate(newPayrollList, "Social Security (Rate)");
+
+        // Assume you have functions to fetch these totalMonthly sums:
+        const totalSalary = getTotalMonthlyByCategory(salariedWorkers);
+        const totalFullTime = getTotalMonthlyByCategory(fullTimeWorkers);
+        const totalPartTime = getTotalMonthlyByCategory(partTimeWorkers);
+        const totalFounders = selectedValue === "option1" ? getTotalMonthlyByCategory(foundersDraw) : [];
+
+        const totalForCalculations = totalSalary.map((item, index) => ({
+            amount: item.amount + totalFullTime[index].amount + totalPartTime[index].amount + (totalFounders[index] ? totalFounders[index].amount : 0)
+        }));
+
+        updatePayrollItemMonthlyData(newPayrollList, "Medicare", totalForCalculations, medicareRate);
+        updatePayrollItemMonthlyData(newPayrollList, "Social Security (Rate)", totalForCalculations, socialSecurityRate);
+
+        return {
+            ...prevState,
+            payrollList: newPayrollList
+        };
+    });
+  };
+
+  function findPayrollItemRate(payrollList, itemName) {
+      const item = payrollList.find(p => p.sourceName === itemName);
+      return item ? item.value : 0;
+  }
+
+  function getTotalMonthlyByCategory(categoryState) {
+      return categoryState.totalMonthly.map(month => ({ amount: month.amount }));
+  }
+
+  function updatePayrollItemMonthlyData(payrollList, itemName, totalMonthly, rate) {
+      const index = payrollList.findIndex(item => item.sourceName === itemName);
+      if (index !== -1) {
+          payrollList[index].monthlyData = payrollList[index].monthlyData.map((data, monthIndex) => {
+              return {
+                  ...data,
+                  amount: totalMonthly[monthIndex].amount * rate
+              };
+          });
+      }
+  }
+  function updateTotalMonthly(workersList, monthIndex, setWorkersHeadCount) {
+    // Calculate the sum of amounts for the specified month across all workers
+    const totalForMonth = workersList.reduce((total, worker) => {
+        return total + (worker.monthlyData[monthIndex].amount || 0);
+    }, 0);
+
+    // Update the totalMonthly array in the workersHeadCount state
+    setWorkersHeadCount(prevState => {
+        let newTotalMonthly = [...prevState.totalMonthly];
+        newTotalMonthly[monthIndex] = { ...newTotalMonthly[monthIndex], amount: totalForMonth };
+
+        return {
+            ...prevState,
+            totalMonthly: newTotalMonthly
+        };
+    });
+  }
+  const handlePartTimeDescriptionChange = (index, event) => {
+    const newDescription = event.target.value;
+  
+    setPartTimeWorkers(prevState => ({
+      ...prevState,
+      workersList: prevState.workersList.map((worker, i) => {
+        if (i === index) {
+          return { ...worker, description: newDescription };
+        }
+        return worker;
+      })
+    }));
+  };
+  
+  const handlePartTimeSalaryChange = (index, event) => {
+    const newSalary = parseFloat(event.target.value) || 0;
+  
+    setPartTimeWorkers(prevState => {
+      const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+        if (wIdx === index) {
+          return { ...worker, monthlySalary: newSalary };
+        }
+        return worker;
+      });
+  
+      // Calculate the sum of all monthly salaries
+      const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+  
+      // Recalculate totals for each month
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => {
+        const sumOfAmounts = updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0);
+        const totalForMonth = totalMonthlySalaries * sumOfAmounts;
+        return { ...total, amount: totalForMonth };
+      });
+  
+      return {
+        ...prevState,
+        workersList: updatedWorkersList,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  const handlePartTimeMonthlyDataChange = (workerIndex, monthIndex, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;
+
+    setPartTimeWorkers(prevState => {
+        // Update the individual monthly data for the specific worker
+        const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+            if (wIdx === workerIndex) {
+                const updatedMonthlyData = worker.monthlyData.map((data, mDataIdx) => {
+                    if (mDataIdx === monthIndex) {
+                        return { ...data, amount: newAmount };
+                    }
+                    return data;
+                });
+                return { ...worker, monthlyData: updatedMonthlyData };
+            }
+            return worker;
+        });
+
+        // Calculate the sum of all monthly salaries
+        const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+        
+        // Prepare sums of amounts for each month across all workers before state updates
+        const sumsOfAmounts = updatedWorkersList[0].monthlyData.map((_, tIdx) => 
+            updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0)
+        );
+
+        // Update the totalMonthly using the product of sums
+        const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => ({
+            ...total,
+            amount: totalMonthlySalaries * sumsOfAmounts[tIdx]
+        }));
+
+        // Update the workersHeadCount for part-time workers
+        setWorkersHeadCount(headCounts => ({
+            ...headCounts,
+            partTimeHeadCount: headCounts.partTimeHeadCount.map((count, cIdx) => ({
+                ...count,
+                amount: sumsOfAmounts[cIdx]
+            }))
+        }));
+        updateTotalMonthly(updatedWorkersList, monthIndex, setWorkersHeadCount);
+        return {
+            ...prevState,
+            workersList: updatedWorkersList,
+            totalMonthly: updatedTotalMonthly
+        };
+    });
+  };
+  const handleFullTimeMonthlyDataChange = (workerIndex, monthIndex, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;
+
+    setFullTimeWorkers(prevState => {
+        // Update the individual monthly data for the specific worker
+        const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+            if (wIdx === workerIndex) {
+                const updatedMonthlyData = worker.monthlyData.map((data, mDataIdx) => {
+                    if (mDataIdx === monthIndex) {
+                        return { ...data, amount: newAmount };
+                    }
+                    return data;
+                });
+                return { ...worker, monthlyData: updatedMonthlyData };
+            }
+            return worker;
+        });
+
+        // Calculate the sum of all monthly salaries
+        const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+        
+        // Prepare sums of amounts for each month across all workers before state updates
+        const sumsOfAmounts = updatedWorkersList[0].monthlyData.map((_, tIdx) => 
+            updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0)
+        );
+
+        // Update the totalMonthly using the product of sums
+        const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => ({
+            ...total,
+            amount: totalMonthlySalaries * sumsOfAmounts[tIdx]
+        }));
+
+        // Update the workersHeadCount for full-time workers
+        setWorkersHeadCount(headCounts => ({
+            ...headCounts,
+            fullTimeHeadCount: headCounts.fullTimeHeadCount.map((count, cIdx) => ({
+                ...count,
+                amount: sumsOfAmounts[cIdx]
+            }))
+        }));
+        updateTotalMonthly(updatedWorkersList, monthIndex, setWorkersHeadCount);
+        return {
+            ...prevState,
+            workersList: updatedWorkersList,
+            totalMonthly: updatedTotalMonthly
+        };
+    });
+  };
+  const handleFullTimeDescriptionChange = (index, event) => {
+    const newDescription = event.target.value;
+  
+    setFullTimeWorkers(prevState => ({
+      ...prevState,
+      workersList: prevState.workersList.map((worker, i) => {
+        if (i === index) {
+          return { ...worker, description: newDescription };
+        }
+        return worker;
+      })
+    }));
+  };
+  
+  const handleFullTimeSalaryChange = (index, event) => {
+    const newSalary = parseFloat(event.target.value) || 0;
+
+    setFullTimeWorkers(prevState => {
+        const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+            if (wIdx === index) {
+                return { ...worker, monthlySalary: newSalary };
+            }
+            return worker;
+        });
+
+        // Calculate the sum of all monthly salaries
+        const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+
+        // Calculate the new totals for each month based on the updated monthly salaries
+        const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => {
+            const sumOfAmounts = updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0);
+            const totalForMonth = totalMonthlySalaries * sumOfAmounts;
+            return { ...total, amount: totalForMonth };
+        });
+
+        return {
+            ...prevState,
+            workersList: updatedWorkersList,
+            totalMonthly: updatedTotalMonthly
+        };
+    });
+  };
+  const addNewWorker = () => {
+    const newWorker = {
+      description: "New Worker",
+      monthlySalary: 0,
+      monthlyData: _.cloneDeep(initialMonthlyData)
+    };
+  
+    setSalariedWorkers(prevState => ({
+      ...prevState,
+      workersList: [...prevState.workersList, newWorker]
+    }));
+  };
+  const addNewFullTimeWorker = () => {
+    const newWorker = {
+        description: "New Full-Time Worker",
+        monthlySalary: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+    };
+
+    setFullTimeWorkers(prevState => ({
+        ...prevState,
+        workersList: [...prevState.workersList, newWorker]
+    }));
+  };
+  const addNewPartTimeWorker = () => {
+    const newWorker = {
+        description: "New Part-Time Worker",
+        monthlySalary: 0,
+        monthlyData: _.cloneDeep(initialMonthlyData)
+    };
+
+    setPartTimeWorkers(prevState => ({
+        ...prevState,
+        workersList: [...prevState.workersList, newWorker]
+    }));
+  };
+  const handleMonthlyDataChange = (workerIndex, monthIndex, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;
+
+    setSalariedWorkers(prevState => {
+        // Update the monthly data for the specific worker
+        const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+            if (wIdx === workerIndex) {
+                const updatedMonthlyData = worker.monthlyData.map((data, mDataIdx) => {
+                    if (mDataIdx === monthIndex) {
+                        return { ...data, amount: newAmount };
+                    }
+                    return data;
+                });
+                return { ...worker, monthlyData: updatedMonthlyData };
+            }
+            return worker;
+        });
+
+        // Calculate the sum of all monthly salaries
+        const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+
+        // Prepare sums of amounts for each month across all workers before state updates
+        const sumsOfAmounts = updatedWorkersList[0].monthlyData.map((_, tIdx) => 
+            updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0)
+        );
+
+        // Update the totalMonthly using the product of sums
+        const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => ({
+            ...total,
+            amount: totalMonthlySalaries * sumsOfAmounts[tIdx]
+        }));
+
+        // Update the salariedHeadCount state in workersHeadCount
+        setWorkersHeadCount(headCounts => ({
+            ...headCounts,
+            salariedHeadCount: headCounts.salariedHeadCount.map((count, cIdx) => ({
+                ...count,
+                amount: sumsOfAmounts[cIdx]
+            }))
+        }));
+        // After updating the workers, call updateTotalMonthlyForHeadCount to adjust the totalMonthly
+        updateTotalMonthly(updatedWorkersList, monthIndex, setWorkersHeadCount);
+        return {
+            ...prevState,
+            workersList: updatedWorkersList,
+            totalMonthly: updatedTotalMonthly
+        };
+    });
+  };
+  const handleDescriptionChange = (index, event) => {
+    const newDescription = event.target.value;
+  
+    setSalariedWorkers(prevState => ({
+      ...prevState,
+      workersList: prevState.workersList.map((worker, i) => {
+        if (i === index) {
+          return { ...worker, description: newDescription };
+        }
+        return worker;
+      })
+    }));
+  };
+  
+  const handleSalaryChange = (index, event) => {
+    const newSalary = parseFloat(event.target.value) || 0;
+  
+    setSalariedWorkers(prevState => {
+      // Update the monthly salary for the specific worker
+      const updatedWorkersList = prevState.workersList.map((worker, wIdx) => {
+        if (wIdx === index) {
+          return { ...worker, monthlySalary: newSalary };
+        }
+        return worker;
+      });
+  
+      // Calculate the sum of all monthly salaries
+      const totalMonthlySalaries = updatedWorkersList.reduce((acc, worker) => acc + worker.monthlySalary, 0);
+  
+      // Recalculate totals for each month using the product of sums
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, tIdx) => {
+        const sumOfAmounts = updatedWorkersList.reduce((acc, worker) => acc + (worker.monthlyData[tIdx].amount || 0), 0);
+        const totalForMonth = totalMonthlySalaries * sumOfAmounts;
+        return { ...total, amount: totalForMonth };
+      });
+  
+      return {
+        ...prevState,
+        workersList: updatedWorkersList,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  const addOtherNewExpense = () => {
+    setOtherExpenses(prevState => ({
+      ...prevState,
+      expensesList: [
+        ...prevState.expensesList,
+        { sourceName: "New Expense", monthlyData: _.cloneDeep(initialMonthlyData) }
+      ]
+    }));
+  };
+  const handleExpenseAmountChange = (expenseIndex, monthIndex, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;
+  
+    setOtherExpenses(prevState => ({
+      ...prevState,
+      expensesList: prevState.expensesList.map((expense, expIdx) => {
+        if (expIdx === expenseIndex) {
+          const updatedMonthlyData = expense.monthlyData.map((month, mIdx) => {
+            if (mIdx === monthIndex) {
+              return { ...month, amount: newAmount };
+            }
+            return month;
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      })
+    }));
+  };
+  const handleExpenseNameChange = (index, event) => {
+    const newName = event.target.value;
+  
+    setOtherExpenses(prevState => ({
+      ...prevState,
+      expensesList: prevState.expensesList.map((expense, i) => {
+        if (i === index) {
+          return { ...expense, sourceName: newName };
+        }
+        return expense;
+      })
+    }));
+  };
+  const handleProductionChange = (outerIndex, expenseIndex, monthIndex, event) => {
+    const newAmount = parseFloat(event.target.value) || 0; // Convert input to a number
+  
+    setProductionRelated(prevState => {
+      return prevState.map((item, idx) => {
+        if (idx === outerIndex) {
+          const updatedExpenses = item.expensesList.map((expense, eIdx) => {
+            if (eIdx === expenseIndex) {
+              const updatedMonthlyData = expense.monthlyData.map((monthData, mIdx) => {
+                if (mIdx === monthIndex) {
+                  return { ...monthData, amount: newAmount };
+                }
+                return monthData;
+              });
+              return { ...expense, monthlyData: updatedMonthlyData };
+            }
+            return expense;
+          });
+  
+          return { ...item, expensesList: updatedExpenses };
+        }
+        return item;
+      });
+    });
+  };
+  const handleTravelChange = (index, indexM, event) => {
+    const newAmount = parseFloat(event.target.value) || 0; // Convert input to a number, defaulting to 0 if invalid
+  
+    setTravelVehicleRelated(prevState => {
+      // Update the monthly data for the specific expense item
+      const updatedExpenses = prevState.expensesList.map((expense, expIndex) => {
+        if (expIndex === index) {
+          const updatedMonthlyData = expense.monthlyData.map((monthData, monthIndex) => {
+            if (monthIndex === indexM) {
+              return { ...monthData, amount: newAmount };
+            }
+            return monthData;
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      });
+  
+      // Recalculate totals
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, monthIndex) => {
+        const sum = updatedExpenses.reduce((sum, { monthlyData }) => sum + monthlyData[monthIndex].amount, 0);
+        return { ...total, amount: sum };
+      });
+  
+      return {
+        expensesList: updatedExpenses,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  
+  const handleBankingChange = (index, indexM, event) => {
+    const newAmount = parseFloat(event.target.value) || 0; // Convert the input to a number, defaulting to 0 if invalid
+  
+    setBankingFees(prevState => {
+      // Update the monthly data for the specific expense item
+      const updatedExpenses = prevState.expensesList.map((expense, expIndex) => {
+        if (expIndex === index) {
+          const updatedMonthlyData = expense.monthlyData.map((monthData, monthIndex) => {
+            if (monthIndex === indexM) {
+              return { ...monthData, amount: newAmount };
+            }
+            return monthData;
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      });
+  
+      // Recalculate totals
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, monthIndex) => {
+        const sum = updatedExpenses.reduce((sum, { monthlyData }) => sum + monthlyData[monthIndex].amount, 0);
+        return { ...total, amount: sum };
+      });
+  
+      return {
+        expensesList: updatedExpenses,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  const handleOfficeChange = (index, indexM, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;  // Convert the input to a number, defaulting to 0 if invalid
+  
+    setOfficeGeneralBusiness(prevState => {
+      // Update the monthly data for the specific expense item
+      const updatedExpenses = prevState.expensesList.map((expense, expIndex) => {
+        if (expIndex === index) {
+          const updatedMonthlyData = expense.monthlyData.map((monthData, monthIndex) => {
+            if (monthIndex === indexM) {
+              return { ...monthData, amount: newAmount };
+            }
+            return monthData;
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      });
+  
+      // Recalculate totals
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, monthIndex) => {
+        const sum = updatedExpenses.reduce((sum, { monthlyData }) => sum + monthlyData[monthIndex].amount, 0);
+        return { ...total, amount: sum };
+      });
+  
+      return {
+        expensesList: updatedExpenses,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  const handleServiceChange = (index, indexM, event) => {
+    const newAmount = parseFloat(event.target.value) || 0;  // Convert the input to a number, defaulting to 0 if invalid
+  
+    setLegalAndProfessionalServices(prevState => {
+      // Update the monthly data for the specific expense item
+      const updatedExpenses = prevState.expensesList.map((expense, expIndex) => {
+        if (expIndex === index) {
+          const updatedMonthlyData = expense.monthlyData.map((monthData, monthIndex) => {
+            if (monthIndex === indexM) {
+              return { ...monthData, amount: newAmount };
+            }
+            return monthData;
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      });
+  
+      // Recalculate totals
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, monthIndex) => {
+        const sum = updatedExpenses.reduce((sum, { monthlyData }) => sum + monthlyData[monthIndex].amount, 0);
+        return { ...total, amount: sum };
+      });
+  
+      return {
+        expensesList: updatedExpenses,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
+  const handlePropertyChange = (index, indexM, event) => {
+    const newAmount = parseFloat(event.target.value); // Ensure the input is treated as a float
+    console.log(`New amount for expense ${index} month ${indexM}: ${newAmount}`);
+    setPropertyRelated(prevState => {
+      const updatedExpenses = prevState.expensesList.map((expense, expIndex) => {
+        if (expIndex === index) {
+          // Update only the specific month data of the specific expense
+          const updatedMonthlyData = expense.monthlyData.map((data, monthIndex) => {
+            if (monthIndex === indexM) {
+              return { ...data, amount: newAmount }; // Update the amount for the changed month
+            }
+            return data; // Return existing data for other months
+          });
+          return { ...expense, monthlyData: updatedMonthlyData };
+        }
+        return expense;
+      });
+  
+      // Recalculate totals for each month
+      const updatedTotalMonthly = prevState.totalMonthly.map((total, monthIndex) => {
+        const sum = updatedExpenses.reduce((acc, curr) => acc + (curr.monthlyData[monthIndex].amount || 0), 0);
+        return { ...total, amount: sum };
+      });
+  
+      return {
+        ...prevState,
+        expensesList: updatedExpenses,
+        totalMonthly: updatedTotalMonthly
+      };
+    });
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Clone the necessary data structures deeply
-    console.log("End1");
     const finalTotalAllExpenses = _.cloneDeep(totalExpenses);
     const finalDistributions = _.cloneDeep(Distributions);
     const finalCashOnHand = _.cloneDeep(cashOnHand);
@@ -282,7 +881,7 @@ function Year1({ setLoggedIn }) {
     finalDistributions.withoutInvestments.forEach((month, index) => {
       month.amount = calculateDistribution(totalAllIncome[index].amount, fundingInvestment.totalMonthly[index].amount);
     });
-    console.log("End2");
+   
 
     // Helper function to update cash on hand
     const updateCashOnHand = (includeDepreciation) => {
@@ -300,7 +899,7 @@ function Year1({ setLoggedIn }) {
   
     // Clone and calculate totals for founders draw and production-related expenses
     const newFoundersDraw = _.cloneDeep(foundersDraw);
-    console.log("End3");
+   
 
     const productionRelatedPerMonth = new Array(initialMonthlyData.length).fill(0);
     _.cloneDeep(productionRelated).forEach(item => {
@@ -318,7 +917,7 @@ function Year1({ setLoggedIn }) {
       return acc;
     }, []);
     
-    console.log("End4");
+    
     // Calculate and update total expenses per month
     finalTotalAllExpenses.forEach((month, index) => {
       month.amount = newFoundersDraw.foundersDrawPayArray[0][index].amount
@@ -555,7 +1154,23 @@ function Year1({ setLoggedIn }) {
       });
     }
   };
+  const handleInputChange = (index, indexM, event) => {
+    const newAmount = event.target.value; // Capture the new input value
   
+    // Create a new state object based on the current state
+    setMarketingExpenses(prevExpenses => {
+      // Create a deep copy of expensesList to avoid direct state mutation
+      const updatedExpenses = [...prevExpenses.expensesList];
+  
+      // Update the specific month's data for the specific source
+      updatedExpenses[index].monthlyData[indexM] = newAmount;
+  
+      return {
+        ...prevExpenses, // Spread the rest of the previous state
+        expensesList: updatedExpenses // Implement the update
+      };
+    });
+  };
   const addNewExpense = (stateName) => {
     const newExpense = { sourceName: 'Other', monthlyData: _.cloneDeep(initialMonthlyData) };
     // Assuming setMarketingExpenses is a useState setter function
@@ -897,7 +1512,7 @@ const addNewSource = (stateName) => {
             <tr key={index}>
               <td>{source.sourceName}</td>
                 {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
-              <td key={indexM}>$<input type="number" value={month}></input></td>
+              <td key={indexM}>$<input type="number" value={month.amount} onChange={(event) => handleInputChange(index, indexM, event)}></input></td>
               ))}
             </tr>
           ))}
@@ -936,10 +1551,16 @@ const addNewSource = (stateName) => {
             </tr>
           </thead>
           <tbody>
-            {propertyRelated.expensesList && propertyRelated.expensesList.map(expense => <tr key={expense}>
+          {propertyRelated.expensesList.map((expense, index) => (
+            <tr key={index}>
               <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+              {expense.monthlyData && expense.monthlyData.map((data, indexM) => (
+                <td key={`${index}-${indexM}`}>  {/* Ensure keys are unique and stable */}
+                  <input type="number" value={data.amount} onChange={(event) => handlePropertyChange(index, indexM, event)} />
+                </td>
+              ))}
+            </tr>
+          ))}
             <tr>
               <td>Total</td>
               {propertyRelated.totalMonthly && propertyRelated.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
@@ -947,88 +1568,120 @@ const addNewSource = (stateName) => {
           </tbody>
         </table>
 
-        <h3>Legal and Professional Serives</h3>
-        <table class="tableizer-table2">
+        <h3>Legal and Professional Services</h3>
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th></th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-            {legalAndProfessionalServices.expensesList && legalAndProfessionalServices.expensesList.map(expense => <tr key={expense}>
-              <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {legalAndProfessionalServices.expensesList && legalAndProfessionalServices.expensesList.map((expense, index) => (
+              <tr key={expense.sourceName}> 
+                <td>{expense.sourceName}</td>
+                {expense.monthlyData && expense.monthlyData.map((data, indexM) => (
+                  <td key={index + '-' + indexM}>  
+                    <input type="number" value={data.amount} onChange={(event) => handleServiceChange(index, indexM, event)} />
+                  </td>
+                ))}
+              </tr>
+            ))}
             <tr>
               <td>Total</td>
-              {legalAndProfessionalServices.totalMonthly && legalAndProfessionalServices.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {legalAndProfessionalServices.totalMonthly && legalAndProfessionalServices.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>  
+              ))}
             </tr>
           </tbody>
         </table>
 
+
         <h3>Office/General Business</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th></th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-            {officeGeneralBusiness.expensesList && officeGeneralBusiness.expensesList.map(expense => <tr key={expense}>
-              <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {officeGeneralBusiness.expensesList && officeGeneralBusiness.expensesList.map((expense, index) => (
+              <tr key={expense.sourceName}>  
+                <td>{expense.sourceName}</td>
+                {expense.monthlyData && expense.monthlyData.map((data, indexM) => (
+                  <td key={index + '-' + indexM}>  
+                    <input type="number" value={data.amount} onChange={(event) => handleOfficeChange(index, indexM, event)} />
+                  </td>
+                ))}
+              </tr>
+            ))}
             <tr>
               <td>Total</td>
-              {officeGeneralBusiness.totalMonthly && officeGeneralBusiness.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {officeGeneralBusiness.totalMonthly && officeGeneralBusiness.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>
+              ))}
             </tr>
           </tbody>
         </table>
 
         <h3>Banking Fees</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th></th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-            {bankingFees.expensesList && bankingFees.expensesList.map(expense => <tr key={expense}>
-              <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {bankingFees.expensesList && bankingFees.expensesList.map((expense, index) => (
+              <tr key={expense.sourceName}> 
+                <td>{expense.sourceName}</td>
+                {expense.monthlyData && expense.monthlyData.map((data, indexM) => (
+                  <td key={index + '-' + indexM}>  
+                    <input type="number" value={data.amount} onChange={(event) => handleBankingChange(index, indexM, event)} />
+                  </td>
+                ))}
+              </tr>
+            ))}
             <tr>
               <td>Total</td>
-              {bankingFees.totalMonthly && bankingFees.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {bankingFees.totalMonthly && bankingFees.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td> 
+              ))}
             </tr>
           </tbody>
         </table>
-
-        <h3>Travel/Vehicule Related</h3>
-        <table class="tableizer-table2">
+        <h3>Travel/Vehicle Related</h3>
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th></th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-            {travelVehicleRelated.expensesList && travelVehicleRelated.expensesList.map(expense => <tr key={expense}>
-              <td>{expense.sourceName}</td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {travelVehicleRelated.expensesList && travelVehicleRelated.expensesList.map((expense, index) => (
+              <tr key={expense.sourceName}>  
+                <td>{expense.sourceName}</td>
+                {expense.monthlyData && expense.monthlyData.map((data, indexM) => (
+                  <td key={index + '-' + indexM}> 
+                    <input type="number" value={data.amount} onChange={(event) => handleTravelChange(index, indexM, event)} />
+                  </td>
+                ))}
+              </tr>
+            ))}
             <tr>
               <td>Total</td>
-              {travelVehicleRelated.totalMonthly && travelVehicleRelated.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {travelVehicleRelated.totalMonthly && travelVehicleRelated.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>  
+              ))}
             </tr>
           </tbody>
         </table>
 
         <h3>Production Related</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th></th>
@@ -1036,118 +1689,149 @@ const addNewSource = (stateName) => {
             </tr>
           </thead>
           <tbody>
-            {productionRelated && productionRelated.map((item, index) => <tr>
-              <td>{item.name}</td>
-              <td>
-                <table className="nested-table">
-                  <thead>
-                    <th></th>
-                    {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
-                  </thead>
-                  <tbody>
-                    {item.expensesList && item.expensesList.map(expense => 
-                    <tr key={expense}>
-                      <td>{expense.sourceName}</td>
-                      {expense.monthlyData && expense.monthlyData.map(month => <td><input type="number" value={month}></input></td>)}
-                    </tr>)}
-                  </tbody>
-                </table>                
-              </td>    
-            </tr>)}
+            {productionRelated && productionRelated.map((item, outerIndex) => (
+              <tr key={outerIndex}>
+                <td>{item.name}</td>
+                <td>
+                  <table className="nested-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {item.expensesList && item.expensesList.map((expense, expenseIndex) => (
+                        <tr key={expense.sourceName}>
+                          <td>{expense.sourceName}</td>
+                          {expense.monthlyData && expense.monthlyData.map((month, monthIndex) => (
+                            <td key={monthIndex}>
+                              <input type="number" value={month.amount} onChange={(event) => handleProductionChange(outerIndex, expenseIndex, monthIndex, event)} />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
         <h3>Other Expenses</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th>Expense Name</th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
             </tr>
           </thead>
           <tbody>
-            {otherExpenses.expensesList && otherExpenses.expensesList.map(expense => <tr key={expense}>
-              <td><input type="string" value={expense.sourceName}></input></td>
-              {expense.monthlyData && expense.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
-            <tr>
-              <td>Total</td>
-              {otherExpenses.totalMonthly && otherExpenses.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
-            </tr>
+            {otherExpenses.expensesList && otherExpenses.expensesList.map((expense, index) => (
+              <tr key={index}>
+                <td><input type="text" value={expense.sourceName} onChange={(event) => handleExpenseNameChange(index, event)} /></td>
+                {expense.monthlyData && expense.monthlyData.map((month, mIndex) => (
+                  <td key={mIndex}><input type="number" value={month.amount} onChange={(event) => handleExpenseAmountChange(index, mIndex, event)} /></td>
+                ))}
+              </tr>
+            ))}
+          
           </tbody>
         </table>
+        <button onClick={addOtherNewExpense}>+</button>
 
         <h2>Employee Related</h2>
         <h3>Salaried</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th>Description</th>
               <th>Monthly Salary</th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}># of workers</th>)}
             </tr>
           </thead>
           <tbody>
-            {salariedWorkers.workersList && salariedWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string" value={workers.description}></input></td>
-              <td><input type="number" value={workers.monthlySalary}></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {salariedWorkers.workersList && salariedWorkers.workersList.map((worker, index) => (
+              <tr key={index}>
+                <td><input type="text" value={worker.description} onChange={(event) => handleDescriptionChange(index, event)} /></td>
+                <td><input type="number" value={worker.monthlySalary} onChange={(event) => {handleSalaryChange(index, event); calculatePayrollMonthlyData()}} /></td>
+                {worker.monthlyData.map((month, mIndex) => (
+                  <td key={mIndex}><input type="number" value={month.amount} onChange={(event) => {handleMonthlyDataChange(index, mIndex, event); calculatePayrollMonthlyData()}} /></td>
+                ))}
+              </tr>
+            ))}
             <tr>
-              
               <td className="totalTD" colSpan={2}>Total</td>
-              {salariedWorkers.totalMonthly && salariedWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {salariedWorkers.totalMonthly && salariedWorkers.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>
+              ))}
             </tr>
           </tbody>
         </table>
+        <button onClick={addNewWorker}>+</button>
 
         <h3>Hourly Full Time</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th>Description</th>
               <th>Monthly Salary</th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}># of workers</th>)}
             </tr>
           </thead>
           <tbody>
-            {fullTimeWorkers.workersList && fullTimeWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string" value={workers.description}></input></td>
-              <td><input type="number" value={workers.monthlySalary}></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {fullTimeWorkers.workersList && fullTimeWorkers.workersList.map((worker, index) => (
+              <tr key={index}>
+                <td><input type="text" value={worker.description} onChange={(event) => handleFullTimeDescriptionChange(index, event)} /></td>
+                <td><input type="number" value={worker.monthlySalary} onChange={(event) => {handleFullTimeSalaryChange(index, event); calculatePayrollMonthlyData()}} /></td>
+                {worker.monthlyData && worker.monthlyData.map((month, mIndex) => (
+                  <td key={mIndex}><input type="number" value={month.amount} onChange={(event) => {handleFullTimeMonthlyDataChange(index, mIndex, event); calculatePayrollMonthlyData()}} /></td>
+                ))}
+              </tr>
+            ))}
             <tr>
-              
               <td className="totalTD" colSpan={2}>Total</td>
-              {fullTimeWorkers.totalMonthly && fullTimeWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {fullTimeWorkers.totalMonthly && fullTimeWorkers.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>
+              ))}
             </tr>
           </tbody>
         </table>
+        <button onClick={addNewFullTimeWorker}>+</button>
+
 
         <h3>Hourly Part Time</h3>
-        <table class="tableizer-table2">
+        <table className="tableizer-table2">
           <thead>
             <tr>
               <th>Description</th>
               <th>Monthly Salary</th>
-              {monthsOnly.map(month => <th className="monthHeader" key={month}>{month}</th>)}
+              {monthsOnly.map((month, index) => <th className="monthHeader" key={index}># of workers</th>)}
             </tr>
           </thead>
           <tbody>
-            {partTimeWorkers.workersList && partTimeWorkers.workersList.map(workers => <tr key={workers}>
-              <td><input type="string" value={workers.description}></input></td>
-              <td><input type="number" value={workers.monthlySalary}></input></td>
-              {workers.monthlyData && workers.monthlyData.map(month => <td key={month}><input type="number" value={month}></input></td>)}
-            </tr>)}
+            {partTimeWorkers.workersList && partTimeWorkers.workersList.map((worker, index) => (
+              <tr key={index}>
+                <td><input type="text" value={worker.description} onChange={(event) => handlePartTimeDescriptionChange(index, event)} /></td>
+                <td><input type="number" value={worker.monthlySalary} onChange={(event) => {handlePartTimeSalaryChange(index, event); calculatePayrollMonthlyData()}} /></td>
+                {worker.monthlyData && worker.monthlyData.map((month, mIndex) => (
+                  <td key={mIndex}><input type="number" value={month.amount} onChange={(event) => {handlePartTimeMonthlyDataChange(index, mIndex, event); calculatePayrollMonthlyData()}} /></td>
+                ))}
+              </tr>
+            ))}
             <tr>
-              
               <td className="totalTD" colSpan={2}>Total</td>
-              {partTimeWorkers.totalMonthly && partTimeWorkers.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {partTimeWorkers.totalMonthly && partTimeWorkers.totalMonthly.map((month, index) => (
+                <td key={index}>{month.amount}</td>
+              ))}
             </tr>
           </tbody>
         </table>
-        
+        <button onClick={addNewPartTimeWorker}>+</button>
+
         <br></br>
+        <h3>Workers Head Count</h3>
         <table class="tableizer-table2">
           <thead>
             <tr>
@@ -1176,12 +1860,12 @@ const addNewSource = (stateName) => {
               <td className="totalTD">Total</td>
               {workersHeadCount.totalMonthly && workersHeadCount.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
             </tr>
+
           </tbody>
         </table>
         <br></br>
         <label htmlFor="dropdown">Founder(s) Status:</label>
-        <select id="dropdown" value={selectedValue} onChange={handleDropdownChange}>
-          <option value="option0">-- Please select --</option>
+        <select id="dropdown" value={selectedValue} onChange={e => {handleDropdownChange(); calculatePayrollMonthlyData()}}>
           <option value="option1">Founder(s) NOT Taxed (in gray below)</option>
           <option value="option2">Founder(s) Are Taxed as Employees</option>
         </select>
@@ -1197,11 +1881,15 @@ const addNewSource = (stateName) => {
             </tr>
           </thead>
           <tbody>
-            {payRollTaxesAndBenefits.payrollList && payRollTaxesAndBenefits.payrollList.map(row_item => 
+            {payRollTaxesAndBenefits.payrollList && payRollTaxesAndBenefits.payrollList.map((row_item, index) => 
             <tr key={row_item}>
               <td>{row_item.sourceName}</td>
-              <td><input type="number" value={row_item.value}></input></td>
-              {row_item.monthlyData && row_item.monthlyData.map(month => <td key={month}>{month.amount}</td>)}
+              <td><input type="number" value={row_item.value} onChange={event => {handlePayrollValueChange(index, event); calculatePayrollMonthlyData()}}></input></td>
+              {row_item.sourceName!=="State Unemployment Tax (Base)" && row_item.sourceName!=="Federal Unemployment Tax (Base)" && row_item.sourceName!=="Social Security (Base)" && row_item.monthlyData && row_item.monthlyData.map(month => <td key={month}>{month.amount}</td>)}
+              {(row_item.sourceName==="State Unemployment Tax (Base)") && ((row_item.monthlyData) && (row_item.monthlyData.map(month => <td className="blackTD" key={month}></td>)))}
+              {(row_item.sourceName==="Federal Unemployment Tax (Base)") && ((row_item.monthlyData) && (row_item.monthlyData.map(month => <td className="blackTD" key={month}></td>)))}
+              {(row_item.sourceName==="Social Security (Base)") && ((row_item.monthlyData) && (row_item.monthlyData.map(month => <td className="blackTD" key={month}></td>)))}
+
             </tr>)}
             <tr>
               <td className="totalTD" colSpan={2}>Total</td>
@@ -1209,7 +1897,7 @@ const addNewSource = (stateName) => {
             </tr>
             
           </tbody>
-        </table>
+        </table> 
 
         
 

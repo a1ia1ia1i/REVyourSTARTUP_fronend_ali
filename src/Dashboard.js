@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import NavigationBar from './NavigationBar';
+import { AuthContext } from './contexts/authcontext';
 
 
-function Dashboard({ setLoggedIn }) {
-  const handleLogout = () => {
-    setLoggedIn(false);
-  }
- 
+function Dashboard() {
+  const { handleLogout } = useContext(AuthContext);
+  
+  
 
   return (
     <div className="dashboard">

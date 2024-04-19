@@ -43,7 +43,7 @@ export const revFormGet = (mainFormId, userData) => {
 export const proFormaSubmit = (mainFormId, userData) => {
   return api.post(`form/pro_forma/${mainFormId}`, userData);
 }
-export const createMainForm = (userId, name) => {
+export const createMainForm = (userId, formName) => {
   return api.post(`form/${userId}`, formName);
 }
 export const getMainForms = (userId) => {
