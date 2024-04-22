@@ -30,8 +30,14 @@ export const updateUserProfile = (userId, userData) => {
   return api.put(`users/${userId}/`, userData);
 };
 
-export const year1 = (mainFormId, userData) => {
+export const year1Submit = (mainFormId, userData) => {
   return api.post(`form/year1/${mainFormId}`, userData);
+}
+export const year2Submit = (mainFormId, userData) => {
+  return api.post(`form/year2/${mainFormId}`, userData);
+}
+export const year3Submit = (mainFormId, userData) => {
+  return api.post(`form/year3/${mainFormId}`, userData);
 }
 
 export const revFormSubmit = (mainFormId, userData) => {

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { AuthContext } from './contexts/authcontext';
 import _, { initial } from 'lodash';
 import './Year1.css';
-import { year1 } from './api'
+import { year1Submit } from './api'
 
 import Dashboard from './Dashboard';
 // Example data structure
@@ -15,7 +16,8 @@ const objectListTest = [{
 numberToSell: 5,
 price: 85}];
 
-function Year1({ setLoggedIn }) {
+function Year1() {
+  const {userID} = useContext(AuthContext);
   const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));
   const mainFormId = useState(0);
   const [customerSegments, setCustomerSegments] = useState([]);
@@ -168,7 +170,6 @@ function Year1({ setLoggedIn }) {
         price: item.price,
         status: 'Pending', // Example status, you can initialize it as needed
         inputData: {
-          // You can initialize it with default values
           deposit: 0,
           deliveredIn: 0,
           extraMonths: 0,
@@ -978,7 +979,7 @@ function Year1({ setLoggedIn }) {
     
     try {
       console.log(userData);
-      const response = await year1(mainFormId, userData);
+      const response = await year1Submit(mainFormId, userData);
 
     }
     catch (error) {
@@ -1231,69 +1232,80 @@ const addNewSource = (stateName) => {
 };
 
   return (
-    <div className="year1">
-      <Dashboard setLoggedIn={setLoggedIn}/>
+    <div className="formPlacement">
+      <Dashboard />
       <h2>Year 1 Income Overview</h2>
 
       <form onSubmit={handleSubmit}>
-        {customerSegments.map((item, index) => (
-          <table className="tableizer-table" key={item.name}>
-            <thead>
-              <tr>
-                <th>Product/Service</th>
-                <th>Status: {item.numberToSell}</th>
-                {months.map(month => <th className="monthHeader" key={`${month}-${index}`}>{month}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td rowSpan={6}>{item.name}</td>
-                <td rowSpan={6}>
-                  <table className="nested-table">
-                    <tbody>
-                      <tr><td>Number of Customers @ {item.price}</td></tr>
-                      <tr>
-                        <td>Deposit % <input type="number" name={`depositPercent-${index}`} value={item.inputData.deposit} onChange={e => handleChange(index, 'deposit', e.target.value)} /></td>
-                      </tr>
-                      <tr>
-                        <td>Delivered in X months <input type="number" name={`deliveredInMonths-${index}`} value={item.inputData.deliveredIn} onChange={e => handleChange(index, 'deliveredIn', e.target.value)} /></td>
-                      </tr>
-                      <tr>
-                        <td># of extra months to pay <input type="number" name={`extraMonths-${index}`} value={item.inputData.extraMonths} onChange={e => handleChange(index, 'extraMonths', e.target.value)} /></td>
-                      </tr>
-                      <tr>
-                        <td>Commission as % of income <input type="number" name={`commissionPercent-${index}`} value={item.inputData.commission} onChange={e => handleChange(index, 'commission', e.target.value)} /></td>
-                      </tr>
-                      <tr>
-                        <td>Fixed Fees/Customer <input type="number" name={`fixedFees-${index}`} value={item.inputData.fixedFees} onChange={e => handleChange(index, 'fixedFees', e.target.value)} /></td>
-                      </tr>
-                      <tr>
-                        <td>TOTAL</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-                {months.map((month, indexM) => (
-                  <td rowSpan={6} key={`month-${month}-${index}`} className="td-month">
-                    <table className="month-table">
-                      <thead></thead>
-                        <tbody>
-                          <tr><td className="td-month-input"><input type="number" name='NumbersSold' value={item.monthlyData[indexM].NumbersSold} onChange={e => handleChangeMonthlyData(index, indexM,'numbersSold', e.target.value)} ></input></td></tr>
-                          <tr><td className="td-month">{item.monthlyData[indexM].Deposit}</td></tr>
-                          <tr><td className="td-month">{item.monthlyData[indexM].Original}</td></tr>
-                          <tr><td className="td-month">{item.monthlyData[indexM].ExtraFromPreviousMonths}</td></tr>
-                          <tr><td className="td-month">{item.monthlyData[indexM].commission}</td></tr>
-                          <tr><td className="td-month">{item.monthlyData[indexM].fixedFees}</td></tr>
-                          <tr><td className="td-month">{item.totalMonthlyData[indexM].amount}</td></tr>
-                        </tbody>   
-                    </table>
-                  </td>
-                ))}
-              </tr>
-                
-            </tbody>
-          </table>
-        ))}
+      <table className="tableizer-table2">
+        <thead>
+          <tr>
+            <th>Product/Service</th>
+            <th>Month Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customerSegments && customerSegments.map((item, outerIndex) => (
+            <tr key={outerIndex}>
+              <td>{item.name}</td>
+              <td>
+                <table className="nested-table">
+                  <thead className="thead2">
+                    <tr>
+                      <th>{item.numberToSell}</th>
+                      {months.map((month, index) => <th className="monthHeader" key={index}>{month}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Number of Customers @ {item.price}</td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexM) => (
+                        <td key={indexM}><input type="number" value={item.monthlyData[indexM].NumbersSold} onChange={e => handleChangeMonthlyData(outerIndex, indexM,'numbersSold', e.target.value)}></input></td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Deposit % <input type="number" name={`depositPercent-${outerIndex}`} value={item.inputData.deposit} onChange={e => handleChange(outerIndex, 'deposit', e.target.value)} /></td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexA) => (
+                        <td key={indexA}>{rowValue.Deposit}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Delivered in X months <input type="number" name={`deliveredInMonths-${outerIndex}`} value={item.inputData.deliveredIn} onChange={e => handleChange(outerIndex, 'deliveredIn', e.target.value)} /></td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexB) => (
+                        <td key={indexB}>{rowValue.Original}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td># of extra months to pay <input type="number" name={`extraMonths-${outerIndex}`} value={item.inputData.extraMonths} onChange={e => handleChange(outerIndex, 'extraMonths', e.target.value)} /></td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexC) => (
+                        <td key={indexC}>{rowValue.ExtraFromPreviousMonths}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Commission as % of income <input type="number" name={`commissionPercent-${outerIndex}`} value={item.inputData.commission} onChange={e => handleChange(outerIndex, 'commission', e.target.value)} /></td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexD) => (
+                        <td key={indexD}>{rowValue.commission}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Fixed Fees/Customer <input type="number" name={`fixedFees-${outerIndex}`} value={item.inputData.fixedFees} onChange={e => handleChange(outerIndex, 'fixedFees', e.target.value)} /></td>
+                      {item.monthlyData && item.monthlyData.map((rowValue, indexE) => (
+                        <td key={indexE}>{rowValue.fixedFees}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>TOTAL</td>
+                      {item.totalMonthlyData && item.totalMonthlyData.map((columnTotal, indexF) => (
+                        <td key={indexF}>{columnTotal.amount}</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
         <h2>Additional Revenue</h2>
         <table className="tableizer-table2">
           <thead>
@@ -1307,14 +1319,14 @@ const addNewSource = (stateName) => {
               <tr key={index}>
                 <td>
                   <input
-                    type="string"
+                    type="text"
                     value={additionalRevenue.sourceNames[index]}
                     onChange={e => handleSourceNameChange("additional_revenue", index, e.target.value)}
                   />
                 </td>
                 {source.map((monthData, indexM) => (
                   <td key={indexM}>
-                    $<input
+                    <input
                       type="number"
                       value={monthData.amount}
                       onChange={e => handleAmountChange("additional_revenue", index, indexM, e.target.value)}
@@ -1325,7 +1337,7 @@ const addNewSource = (stateName) => {
             ))}
             <tr>
               <td>Total</td>
-              {additionalRevenue.totalMonthly && additionalRevenue.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {additionalRevenue.totalMonthly && additionalRevenue.totalMonthly.map(month => <td key={month}>${month.amount}</td>)}
             </tr>
             
           </tbody>
@@ -1344,14 +1356,14 @@ const addNewSource = (stateName) => {
               <tr key={index}>
                 <td>
                   <input
-                    type="string"
+                    type="text"
                     value={fundingInvestment.sourceNames[index]}
                     onChange={e => handleSourceNameChange("funding_investment", index, e.target.value)}
                   />
                 </td>
                 {source.map((monthData, monthIndex) => (
                   <td key={monthIndex}>
-                    $<input
+                    <input
                       type="number"
                       value={monthData.amount}
                       onChange={e => handleAmountChange("funding_investment", index, monthIndex, e.target.value)}
@@ -1363,7 +1375,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td>Total</td>
               {fundingInvestment.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>
+                <td key={index}>${month.amount}</td>
               ))}
             </tr>
           </tbody>
@@ -1378,7 +1390,7 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             <tr>
-              {totalAllIncome.map(month => <td>{month.amount}</td>)}
+              {totalAllIncome.map(month => <td>${month.amount}</td>)}
             </tr>
           </tbody>
         </table>
@@ -1393,16 +1405,16 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             <tr>
-              <td><button onClick={() => handleYesInclude()}>Yes</button><button onClick={() => handleNoInclude()}>No</button></td>
+              <td><button className="buttonYes" onClick={() => handleYesInclude()}>Yes</button><button className="buttonNo" onClick={() => handleNoInclude()}>No</button></td>
               {Distributions.includeInvestments ? 
                 (Array.isArray(Distributions.withInvestments) && Distributions.withInvestments.length > 0 ?
                 Distributions.withInvestments.map(month => (
-                  <td key={month}>{month.amount}</td>
+                  <td key={month}>${month.amount}</td>
                 )) 
                 : null)
                 : (Array.isArray(Distributions.withoutInvestments) && Distributions.withoutInvestments.length > 0 ?
                   Distributions.withoutInvestments.map(month => (
-                    <td key={month}>{month.amount}</td>
+                    <td key={month}>${month.amount}</td>
                 )) 
                 : null)
               }
@@ -1422,17 +1434,17 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             <tr>
-              <td><button onClick={() => handleYesExclude()}>Yes</button><button onClick={() => handleNoExclude()}>No</button></td>
-              <td>{cashOnHand.initialCashOnHand}</td>
+              <td><button className="buttonYes" onClick={() => handleYesExclude()}>Yes</button><button className="buttonNo" onClick={() => handleNoExclude()}>No</button></td>
+              <td>${cashOnHand.initialCashOnHand}</td>
               {cashOnHand.excludeDepreciation ? 
                 (Array.isArray(cashOnHand.withoutDepreciation) && cashOnHand.withoutDepreciation.length > 0 ?
                 cashOnHand.withoutDepreciation.map(month => (
-                  <td key={month}>{month.amount}</td>
+                  <td key={month}>${month.amount}</td>
                 )) 
                 : null)
                 : (Array.isArray(cashOnHand.withDepreciation) && cashOnHand.withDepreciation.length > 0 ?
                   cashOnHand.withDepreciation.map(month => (
-                    <td key={month}>{month.amount}</td>
+                    <td key={month}>${month.amount}</td>
                 )) 
                 : null)
               }
@@ -1451,7 +1463,7 @@ const addNewSource = (stateName) => {
           </thead>
           <tbody>
             <tr>
-            {totalExpenses && totalExpenses.map(month => <td key={month}>{month.amount}</td>)}
+            {totalExpenses && totalExpenses.map(month => <td key={month}>${month.amount}</td>)}
           </tr>
           </tbody>
         </table>
@@ -1468,7 +1480,7 @@ const addNewSource = (stateName) => {
           {foundersDraw.foundersDrawPayArray && foundersDraw.foundersDrawPayArray.map((source, index) => (
             <tr key={index}>
                 {Array.isArray(source) && source.map((month, indexM) => (
-              <td key={indexM}>{month.amount}</td>
+              <td key={indexM}>${month.amount}</td>
               ))}
             </tr>
           ))}
@@ -1491,7 +1503,7 @@ const addNewSource = (stateName) => {
               <td>{source.name}</td>
               <td><input type="number" value={source.percentOfRevenue} onChange={e => handleReworksChange(index, e.target.value)}></input></td>
               {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
-                <td key={indexM}>{month.amount}</td>
+                <td key={indexM}>${month.amount}</td>
               ))}
             </tr>
           ))}
@@ -1512,7 +1524,7 @@ const addNewSource = (stateName) => {
             <tr key={index}>
               <td>{source.sourceName}</td>
                 {Array.isArray(source.monthlyData) && source.monthlyData.map((month, indexM) => (
-              <td key={indexM}>$<input type="number" value={month.amount} onChange={(event) => handleInputChange(index, indexM, event)}></input></td>
+              <td key={indexM}><input type="number" value={month.amount} onChange={(event) => handleInputChange(index, indexM, event)}></input></td>
               ))}
             </tr>
           ))}
@@ -1531,11 +1543,11 @@ const addNewSource = (stateName) => {
           <tbody>
           <tr>
             <td>New Acquisitions</td>
-            {fixedAssets.newAcquisitions && fixedAssets.newAcquisitions.map(month => <td key={month}>{month.amount}</td>)}
+            {fixedAssets.newAcquisitions && fixedAssets.newAcquisitions.map(month => <td key={month}>${month.amount}</td>)}
           </tr>
           <tr>
             <td>Depreciation</td>
-            {fixedAssets.depreciation && fixedAssets.depreciation.map(month => <td key={month}>{month.amount}</td>)}
+            {fixedAssets.depreciation && fixedAssets.depreciation.map(month => <td key={month}>${month.amount}</td>)}
 
           </tr>
       
@@ -1563,7 +1575,7 @@ const addNewSource = (stateName) => {
           ))}
             <tr>
               <td>Total</td>
-              {propertyRelated.totalMonthly && propertyRelated.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {propertyRelated.totalMonthly && propertyRelated.totalMonthly.map(month => <td key={month}>${month.amount}</td>)}
             </tr>
           </tbody>
         </table>
@@ -1590,7 +1602,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td>Total</td>
               {legalAndProfessionalServices.totalMonthly && legalAndProfessionalServices.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>  
+                <td key={index}>${month.amount}</td>  
               ))}
             </tr>
           </tbody>
@@ -1619,7 +1631,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td>Total</td>
               {officeGeneralBusiness.totalMonthly && officeGeneralBusiness.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>
+                <td key={index}>${month.amount}</td>
               ))}
             </tr>
           </tbody>
@@ -1674,7 +1686,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td>Total</td>
               {travelVehicleRelated.totalMonthly && travelVehicleRelated.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>  
+                <td key={index}>${month.amount}</td>  
               ))}
             </tr>
           </tbody>
@@ -1684,8 +1696,8 @@ const addNewSource = (stateName) => {
         <table className="tableizer-table2">
           <thead>
             <tr>
-              <th></th>
-              <th></th>              
+              <th>Product/Services</th>
+              <th>Month Data</th>              
             </tr>
           </thead>
           <tbody>
@@ -1764,7 +1776,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td className="totalTD" colSpan={2}>Total</td>
               {salariedWorkers.totalMonthly && salariedWorkers.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>
+                <td key={index}>${month.amount}</td>
               ))}
             </tr>
           </tbody>
@@ -1793,7 +1805,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td className="totalTD" colSpan={2}>Total</td>
               {fullTimeWorkers.totalMonthly && fullTimeWorkers.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>
+                <td key={index}>${month.amount}</td>
               ))}
             </tr>
           </tbody>
@@ -1823,7 +1835,7 @@ const addNewSource = (stateName) => {
             <tr>
               <td className="totalTD" colSpan={2}>Total</td>
               {partTimeWorkers.totalMonthly && partTimeWorkers.totalMonthly.map((month, index) => (
-                <td key={index}>{month.amount}</td>
+                <td key={index}>${month.amount}</td>
               ))}
             </tr>
           </tbody>
@@ -1893,7 +1905,7 @@ const addNewSource = (stateName) => {
             </tr>)}
             <tr>
               <td className="totalTD" colSpan={2}>Total</td>
-              {payRollTaxesAndBenefits.totalMonthly && payRollTaxesAndBenefits.totalMonthly.map(month => <td key={month}>{month.amount}</td>)}
+              {payRollTaxesAndBenefits.totalMonthly && payRollTaxesAndBenefits.totalMonthly.map(month => <td key={month}>${month.amount}</td>)}
             </tr>
             
           </tbody>

@@ -8,7 +8,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const handleLogin = (userID) => {
     const now = new Date().getTime();
-    const timeout = 6 * 60 * 60 * 1000; // For example, 2 hours in milliseconds
+    const timeout = 6 * 60 * 60 * 1000; // 6 hours after logging in
   
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userID', userID);

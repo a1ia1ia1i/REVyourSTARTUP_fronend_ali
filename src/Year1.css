@@ -4,15 +4,16 @@
 	font-size: 12px;
 	border: 2px solid black; 
 	font-family: Arial, Helvetica, sans-serif;
-	table-layout: fixed; /* Ensure table respects set widths */
+	table-layout: fixed; 
 } 
 .tableizer-table2 {
-	width: 99%;
+	width: 100%;
 	font-size: 12px;
 	border: 2px solid black; 
 	font-family: Arial, Helvetica, sans-serif;
 	table-layout: fixed; /* Ensure table respects set widths */
 } 
+
 table.nested-table {
 	width: 100%;
 	font-size: 12px;
@@ -26,35 +27,26 @@ table.month-table td {
 table.nested-table td {
 	border: 2px solid black;
 }
-.tableizer-table th, .tableizer-table td {
-	text-align: center;
-}
+
 .tableizer-table2 th, .tableizer-table2 td {
 	text-align: center;
 }
-.tableizer-table th:first-child, .tableizer-table td:first-child,
-.tableizer-table th:nth-child(2), .tableizer-table td:nth-child(2) {
-  width: 10%;
-}
+
 .tableizer-table2 th:first-child, .tableizer-table2 td:first-child,
 .tableizer-table2 th:nth-child(1), .tableizer-table2 td:nth-child(1) {
-  width: 10%;
+  width: 8%;
 }
-.tableizer-table th:not(:first-child):not(:nth-child(2)), 
-.tableizer-table td:not(:first-child):not(:nth-child(2)) {
-  width: 2%;
-  
-}
+
 .tableizer-table2 td button {
 	width: 50%;
 }
 .tableizer-table th {
-	background-color: #104E8B; 
+	background-color: #050565; 
 	color: #FFF;
 	font-weight: bold;
   }
   .tableizer-table2 th {
-	background-color: #104E8B; 
+	background-color: #050565; 
 	color: #FFF;
 	font-weight: bold;
   }
@@ -66,6 +58,9 @@ input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0; /* Optional: Remove margin */
+}
+.thead2 {
+	
 }
 .month-table {
 	position: absolute;
@@ -91,7 +86,7 @@ table.month-table tr {
 	font-size: 10px;
 	text-align: center;
 }
-td input[type="string"] {
+td input[type="text"] {
 	width: 90%;
 	height: 100%;
 	text-align: left;
@@ -105,7 +100,7 @@ td input[type="number"] {
 }
   
 table.month-table td input {
-	width: 75%;
+	width: 70%;
 	height: 80%;
 	text-align: center;
 	position: relative;
@@ -116,9 +111,29 @@ table.tableizer-table2 td {
 	border: 1px solid black;
 }
 .totalTD {
-	background-color: #104E8B;
+	background-color: #050565;
 	color: white;
 }
 .blackTD {
 	background-color: black;
+}
+
+
+.buttonYes {
+  background-color: #3498db; /* Blue color for "Yes" button */
+  color: white;
+}
+
+.buttonNo {
+  background-color: #e74c3c; /* Red color for "No" button */
+  color: white;
+}
+
+.buttonYes:hover,
+.buttonNo:hover {
+  background-color: #0056b3; /* Darker blue on hover for "Yes" button */
+}
+
+.buttonNo:hover {
+  background-color: #c82333; /* Darker red on hover for "No" button */
 }

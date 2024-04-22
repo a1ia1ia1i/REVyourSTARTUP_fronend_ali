@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import NavigationBar from './NavigationBar';
 import { AuthContext } from './contexts/authcontext';
+import './navbar.css';
 
 
 function Dashboard() {
@@ -11,7 +12,7 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <NavigationBar />
-      <button onClick={handleLogout}>Logout</button>
+      <button style={{ float: 'right' }} onClick={handleLogout}>Logout</button>
     </div>
     
   );

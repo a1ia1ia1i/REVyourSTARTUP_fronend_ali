@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Dashboard from './Dashboard';
+import { AuthContext } from './contexts/authcontext';
 
 
 function Depreciation({setLoggedIn}) {
+  const { userID } = useContext(AuthContext);
   return (
     <div>
         <Dashboard setLoggedIn={setLoggedIn}/>

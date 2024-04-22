@@ -14,17 +14,18 @@ import { AuthContext } from './contexts/authcontext';
 
 function App() {
   const { isLoggedIn } = useContext(AuthContext);
+  const { userID } = useContext(AuthContext);
 
   
   return (
-    <div>
+    <div className="AppContainer">
     <Header />
     <Router>
         <Routes>
-          <Route path="/" element={isLoggedIn ? <Navigate to="/start" /> : <LoginForm/>} />
-          <Route path="/login" element={isLoggedIn ? <Navigate to="/start" /> : <LoginForm/>} />
+          <Route path="/" element={<LoginForm/>} />
+          <Route path="/login" element={<LoginForm/>} />
+          <Route path="/register" element={<RegistrationForm />} />
           <Route path="/start" element={isLoggedIn ? <Start/> : <Navigate to="/" />} />
-          <Route path="/register" element={isLoggedIn ? <RegistrationForm/> : <Navigate to="/" />} />
           <Route path="/proForma" element={isLoggedIn ? <ProForma/> : <Navigate to="/" />} />
           <Route path="/year1" element={isLoggedIn ? <Year1/> : <Navigate to="/" />} />
           <Route path="/year2" element={isLoggedIn ? <Year2/> : <Navigate to="/" />} />

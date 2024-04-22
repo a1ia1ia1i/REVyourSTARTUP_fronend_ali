@@ -1,6 +1,7 @@
 import './styling/registration.css'
 import { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+
 import { login } from '../api'
 import { AuthContext } from '../contexts/authcontext';
 
@@ -14,6 +15,7 @@ const { handleLogin } = useContext(AuthContext);
 const [submitted, setSubmitted] = useState(false);
 const [error, setError] = useState(false);
 const [authenticationError, setAuthError] = useState('');
+const navigate = useNavigate();
 
 // Checking Name
 const handleName = (e) => {
@@ -24,28 +26,34 @@ setSubmitted(false);
 
 // Checking password
 const handlePassword = (e) => {
-setPassword(e.target.value);
-setSubmitted(false);
+    setPassword(e.target.value);
+    setSubmitted(false);
 };
 
 // Handling the form submission
 const handleSubmit = async (e) => {
-e.preventDefault();
-if (name === '' || password === '') {
-setError(true);
-} else {
-    try{
-        const response = await login(name, password);
-        if (response.status === 202) {
-            setSubmitted(true);
-            setError(false);
-            
-            handleLogin(response.userID);
+    e.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedPassword = password.trim();
+
+    
+    const processedName = trimmedName.replace(/\s/g, '');
+    const processedPassword = trimmedPassword.replace(/\s/g, '');
+    if (name === '' || password === '') {
+    setError(true);
+    } else {
+        try{
+            const response = await login(processedName, processedPassword);
+            if (response.status === 202) {
+                setSubmitted(true);
+                setError(false);
+                handleLogin(response.userID);
+                navigate('/start');
+            }
+        } catch (error) {
+            setAuthError('Unable to authenticate user');
         }
-    } catch (error) {
-        setAuthError('Unable to authenticate user');
     }
-}
 };
 
 // Showing success message
@@ -76,9 +84,7 @@ display: error ? '' : 'none',
 
 return (
 <div className="form">
-<div>
-<h1>User Login</h1>
-</div>
+
 
 {/* Calling to the methods */}
 <div className="messages">
@@ -91,6 +97,7 @@ return (
     <div class="circle-container">
     <div class="form-elements">
 {/* Labels and inputs for form data */}
+
 <label className="label">Username</label>
 <input onChange={handleName} className="input"
 value={name} type="text" />
@@ -100,7 +107,7 @@ value={name} type="text" />
 value={password} type="password" />
 
 <button onClick={handleSubmit} className="btn" type="submit">
-Submit
+Login
 </button>
 <p class = "swap">Don't have an account yet? <Link to = "/register"> Click Here</Link></p>
     </div>
