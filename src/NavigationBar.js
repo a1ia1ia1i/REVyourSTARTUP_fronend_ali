@@ -13,7 +13,7 @@ function NavigationBar() {
         <li><Link to="/depreciation" target="_blank">Depreciation form</Link></li>
         <li><Link to="/year2" target="_blank">Year 2 form</Link></li>
         <li><Link to="/year3" target="_blank">Year 3 form</Link></li>
-        {/* Add more links as needed */}
+        
       </ul>
     </nav>
   );

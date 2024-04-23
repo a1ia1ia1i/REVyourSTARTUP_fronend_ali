@@ -1,8 +1,9 @@
-        import React, { useState } from 'react';
+        import React, { useState, useContext } from 'react';
         import './styling/depreciation.css'
-
+        import Dashboard from '../Dashboard';
+        import { AuthContext } from '../contexts/authcontext';
         function Depcreciation() {
-
+        const { mainFormID } = useContext(AuthContext);
         const [values, setValues] = useState({
         category: '',
         description: '',
@@ -189,6 +190,8 @@
         else{
 
         return (
+        <div>
+        <Dashboard />
         <form onSubmit={handleSubmit} className = "proForm">
         <label>
         <div className="form-row">
@@ -255,6 +258,7 @@
         {errorMessage && <div className="error-message">{errorMessage}</div>}
         <button type="submit">Submit</button>
         </form>
+        </div>
         );
         }
         }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 import RevenueChart from './ RevenueChart';
 
@@ -8,11 +8,12 @@ import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
 import ReactDOMServer from 'react-dom/server';
 import { openPdfWindow } from './PdfGenerator';
-
+import Dashboard from '../Dashboard';
+import { AuthContext } from '../contexts/authcontext';
 
 
 function ReverseEvaluation() {
-  // Calculations for Invest Table
+  const { mainFormID } = useContext(AuthContext);
   const [lastYearsRevenue, setLastYearsRevenue] = useState(0);
   const [amountNeeded, setAmountNeeded] = useState(0);
   const [totalMarket, settotalMarket] = useState(0);
@@ -754,6 +755,7 @@ const prepareDataString = () => {
 
   return (
     <div>
+      <Dashboard />
       <nav className="rev_navbar">
         <Link to="/" className="rev_home-button">Home</Link> 
       </nav>

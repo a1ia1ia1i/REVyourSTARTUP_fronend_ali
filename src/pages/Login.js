@@ -47,7 +47,7 @@ const handleSubmit = async (e) => {
             if (response.status === 202) {
                 setSubmitted(true);
                 setError(false);
-                handleLogin(response.userID);
+                handleLogin(response.data.userID);
                 navigate('/start');
             }
         } catch (error) {

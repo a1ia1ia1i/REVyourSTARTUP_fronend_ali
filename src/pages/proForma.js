@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './styling/proforma.css';
 import Dashboard from '../Dashboard';
+import { AuthContext } from '../contexts/authcontext';
 function ProForma() {
-
+  const { mainFormID } = useContext(AuthContext);
   const [values, setValues] = useState({
     startYear: '',
     startMonth: '',
@@ -102,7 +103,7 @@ function ProForma() {
   } else {
     return (
       <>
-      <Dashboard setLoggedIn={setLoggedIn}/>
+      <Dashboard/>
       <form onSubmit={handleSubmit} className = "proForm">
       <label>
       <div className="form-row">

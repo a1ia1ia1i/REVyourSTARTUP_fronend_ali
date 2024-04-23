@@ -59,9 +59,7 @@ input[type=number]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0; /* Optional: Remove margin */
 }
-.thead2 {
-	
-}
+
 .month-table {
 	position: absolute;
 	font-size: 12px;

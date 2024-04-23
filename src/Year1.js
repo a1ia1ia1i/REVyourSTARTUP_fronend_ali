@@ -5,7 +5,6 @@ import './Year1.css';
 import { year1Submit } from './api'
 
 import Dashboard from './Dashboard';
-// Example data structure
 
 const objectListTest = [{
   name: "Kilter Roller Chair",
@@ -18,6 +17,7 @@ price: 85}];
 
 function Year1() {
   const {userID} = useContext(AuthContext);
+  const { mainFormID } = useContext(AuthContext);
   const initialMonthlyData = Array.from({ length: 12 }, () => ({ amount: 0 }));
   const mainFormId = useState(0);
   const [customerSegments, setCustomerSegments] = useState([]);
