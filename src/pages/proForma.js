@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './styling/proforma.css';
-
+import Dashboard from '../Dashboard';
 function ProForma() {
+
   const [values, setValues] = useState({
     startYear: '',
     startMonth: '',
@@ -100,6 +101,8 @@ function ProForma() {
     );
   } else {
     return (
+      <>
+      <Dashboard setLoggedIn={setLoggedIn}/>
       <form onSubmit={handleSubmit} className = "proForm">
       <label>
       <div className="form-row">
@@ -174,6 +177,7 @@ function ProForma() {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
     <button type="submit">Submit</button>
     </form>
+    </>
     );
   }
 }
