@@ -35,19 +35,19 @@ export const proFormaSubmit = (mainFormId, userData) => {
   return api.post(`form/pro_forma/${mainFormId}`, userData);
 }
 export const revFormSubmit = (mainFormId, userData) => {
-  return api.post(`form/rev_form/${mainFormId}`, Data);
+  return api.post(`form/rev_form/${mainFormId}`, userData);
 }
 export const depreciationSubmit = (mainFormId, userData) => {
-  return api.post(`form/depreciation/${mainFormId}`, Data);
+  return api.post(`form/depreciation/${mainFormId}`, userData);
 }
-export const year1Submit = (mainFormId, userData) => {
-  return api.post(`form/year1/${mainFormId}`, userData);
+export const year1Submit = (mainFormId, yearNumber, userData) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`, userData);
 }
-export const year2Submit = (mainFormId, userData) => {
-  return api.post(`form/year2/${mainFormId}`, userData);
+export const year2Submit = (mainFormId, yearNumber, userData) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`, userData);
 }
-export const year3Submit = (mainFormId, userData) => {
-  return api.post(`form/year3/${mainFormId}`, userData);
+export const year3Submit = (mainFormId, yearNumber, userData) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`, userData);
 }
 
 //ALL form gets
@@ -60,14 +60,14 @@ export const proFormaGet = (mainFormId) => {
 export const depreciationGet = (mainFormId) => {
   return api.get(`form/depreciation/${mainFormId}`);
 }
-export const year1Get = (mainFormId) => {
-  return api.get(`form/year1/${mainFormId}`);
+export const year1Get = (mainFormId, yearNumber) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`);
 }
-export const year2Get = (mainFormId) => {
-  return api.get(`form/year2/${mainFormId}`);
+export const year2Get = (mainFormId, yearNumber) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`);
 }
-export const year3Get = (mainFormId) => {
-  return api.get(`form/year3/${mainFormId}`);
+export const year3Get = (mainFormId, yearNumber) => {
+  return api.post(`/form/year_form/${mainFormId}/${yearNumber}`);
 }
 
 //Create and get main forms

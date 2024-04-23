@@ -28,7 +28,9 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   const handleSelectMainForm = (formID) => {
+    
     localStorage.setItem('mainFormID', formID);
+    
     setMainFormID(formID);
   };
 

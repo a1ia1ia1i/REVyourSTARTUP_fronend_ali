@@ -18,6 +18,7 @@ const StartPage = () => {
   const fetchMainForms = async () => {
     try {
       const response = await getMainForms(userID);
+      
       setMainForms(response.data);
     } catch (error) {
       console.error('Error fetching Main Forms:', error);
@@ -35,6 +36,7 @@ const StartPage = () => {
   };
 
   const handleMainFormClick = (mainFormID) => {
+    console.log("Start page main form id: "+mainFormID);
     handleSelectMainForm(mainFormID); 
     navigate('/revForm'); 
   };
@@ -54,8 +56,8 @@ const StartPage = () => {
       </div>
       <div>
         <h2>Existing Main Forms</h2>
-        {mainForms.map((form) => (
-          <div className="MainForms" key={form.id} onClick={() => handleMainFormClick(form.main_form_ID)}>
+        {mainForms.map((form, indexForm) => (
+          <div className="MainForms" key={indexForm} onClick={() => handleMainFormClick(form.main_form_id)}>
             <p>Name: {form.form_name}</p>
             <p>Created: {form.created}</p>
             <p>Last Updated: {form.last_update}</p>

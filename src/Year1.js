@@ -979,8 +979,8 @@ function Year1() {
     
     try {
       console.log(userData);
-      const response = await year1Submit(mainFormId, userData);
-
+      const currentYearNumber = 1;
+      const response = await year1Submit(mainFormID, currentYearNumber, userData);
     }
     catch (error) {
       console.error("Failted to submit form", error);
