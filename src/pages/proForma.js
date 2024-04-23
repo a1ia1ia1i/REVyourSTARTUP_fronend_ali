@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import './styling/proforma.css';
 import Dashboard from '../Dashboard';
 import { AuthContext } from '../contexts/authcontext';
+import { proFormaSubmit, proFormaGet } from '../api'
 function ProForma() {
   const { mainFormID } = useContext(AuthContext);
   const [values, setValues] = useState({

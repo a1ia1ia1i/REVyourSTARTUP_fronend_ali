@@ -2,6 +2,7 @@
         import './styling/depreciation.css'
         import Dashboard from '../Dashboard';
         import { AuthContext } from '../contexts/authcontext';
+        import { depreciationGet, depreciationSubmit } from '../api'
         function Depcreciation() {
         const { mainFormID } = useContext(AuthContext);
         const [values, setValues] = useState({

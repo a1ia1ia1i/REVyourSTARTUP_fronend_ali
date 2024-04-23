@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './contexts/authcontext';
 import _, { initial } from 'lodash';
 import './Year1.css';
-import { year2Submit } from './api'
+import { year2Submit, year2Get } from './api'
 
 import Dashboard from './Dashboard';
 // Example data structure
