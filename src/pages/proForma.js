@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './styling/proforma.css';
 import Dashboard from '../Dashboard';
-function ProForma( { setLoggedIn }) {
+function ProForma() {
+
   const [values, setValues] = useState({
     startYear: '',
     startMonth: '',
