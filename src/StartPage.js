@@ -43,10 +43,9 @@ const StartPage = () => {
 
   return (
     <div>
-      <h1>Start Page</h1>
       <button style={{ float: 'right' }} onClick={handleLogout}>Logout</button>
       <div>
-        <h2>Create New Main Form</h2>
+        <h2>Create New Rev Evaluation</h2>
         <input
           type="text"
           value={newFormName}
@@ -55,7 +54,7 @@ const StartPage = () => {
         <button onClick={handleCreateMainForm}>Create</button>
       </div>
       <div>
-        <h2>Existing Main Forms</h2>
+        <h2>Existing Evaluations</h2>
         {mainForms.map((form, indexForm) => (
           <div className="MainForms" key={indexForm} onClick={() => handleMainFormClick(form.main_form_id)}>
             <p>Name: {form.form_name}</p>
