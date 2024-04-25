@@ -948,10 +948,12 @@ function Year1() {
     console.log('Final Cash on Hand:', finalCashOnHand);
     console.log('Final Distributions:', finalDistributions);
     console.log('Final Total All Expenses:', finalTotalAllExpenses);
+    const newAdditionalRevenue = _.cloneDeep(additionalRevenue);
+    newAdditionalRevenue.totalMonthly.forEach(value => value.amount);
     const userData = {
       year1: {
         customerSegments: _.cloneDeep(customerSegments),
-        additionalRevenue: _.cloneDeep(additionalRevenue),
+        additionalRevenue: _.cloneDeep(newAdditionalRevenue),
         fundingInvestment: _.cloneDeep(fundingInvestment),
         totalAllIncome: [...totalAllIncome],
         distributions: _.cloneDeep(finalDistributions),
