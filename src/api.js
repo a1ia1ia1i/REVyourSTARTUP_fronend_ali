@@ -71,7 +71,7 @@ export const year3Get = (mainFormId, yearNumber) => {
 }
 
 //Create and get main forms
-export const createMainForm = (userId, formName) => {
+export const createMainForm = async(userId, formName) => {
   return api.post(`form/${userId}`, formName);
 }
 export const getMainForms = (userId) => {
