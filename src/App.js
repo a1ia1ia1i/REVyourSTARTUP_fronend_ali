@@ -24,7 +24,7 @@ function App() {
     <Header />
     <Router>
         <Routes>
-          <Route path="/lander" element={<LoginForm/>} />
+          <Route path="/" element={<LoginForm/>} />
           <Route path="/login" element={<LoginForm/>} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/start" element={isLoggedIn ? <Start/> : <Navigate to="/" />} />
