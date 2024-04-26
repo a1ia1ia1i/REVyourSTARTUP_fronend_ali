@@ -1,9 +1,12 @@
   /* Full-page container */
 .full-page-container {
     display: flex;
+    position: fixed;
     justify-content: center; /* Centers children horizontally */
     align-items: center; /* Centers children vertically */
     background-color: #02021e; /* Your container's background color */
+    height: 100%;
+    width: 100%;
 }
 
 /* Circle container */
@@ -13,6 +16,8 @@
     background-color: lightgray; /* Circle color */
     border-radius: 50%; /* Makes it a circle */
     display: flex;
+    position: absolute;
+    top: 5%;
     justify-content: center; /* Centers text horizontally inside the circle */
     align-items: center; /* Centers text vertically inside the circle */
     color: white; /* Text color */

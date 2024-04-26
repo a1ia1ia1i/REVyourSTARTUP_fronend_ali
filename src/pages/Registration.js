@@ -93,7 +93,6 @@ return (
     <div class = "full-page-container">
     <div class="circle-container">
     <div class="form-elements">
-{/* Labels and inputs for form data */}
 
 <label className="label">Username</label>
 <input onChange={handleName} className="input"
