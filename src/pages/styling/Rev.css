@@ -108,15 +108,6 @@ table.month-table tr {
 }
 
 
-
-.buttonNo {
-  background-color: #e74c3c; /* Red */
-}
-
-.buttonYes:hover {
-  background-color: #0056b3; /* Darker blue on hover */
-}
-
 .buttonNo:hover {
   background-color: #c82333; /* Darker red on hover */
 }
