@@ -759,7 +759,7 @@ const prepareDataString = () => {
       
     <div id="form-content" className="rev-container">
       <h1 className="rev-title">Reverse Engineer Valuation</h1>
-      <table>
+      <table className="Rev5">
         <tr>
           <td  className="rev-table">Last Year's Total Revenue (if relevant)</td>
           <td><input className="input-table" type="float" value={`$${lastYearsRevenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`} onChange={(e) => {
