@@ -49,17 +49,6 @@ input[type=number]::-webkit-inner-spin-button {
 #ARtable {
 	margin-left: 125px;
 }
-p {
-	height: 100%;
-    padding: 0;
-    margin: 0;
-    border: none;
-    box-sizing: border-box;
-    outline: none;
-	border: 1px solid black;
-    line-height: normal; 
-    
-}
 .numbersSold {
     height: 100%;
     padding: 0;
